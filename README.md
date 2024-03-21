@@ -32,10 +32,10 @@ The Dialogos system is designed to train multiple AI agents concurrently, each w
 The following is a breif high level description of the projects directory structure:
 
 ```
-- `/Assets/`: Contains all the assets, scripts, and resources used in the Unity project.
-- `|-Scripts/`: Includes C# scripts for the bootstrap manager and other components.
-- `|-Scenes/`: Holds the Unity scenes, including the "MainMenu" scene.
-- `|-Config/`: Stores configuration files like `engine.ini`.
+- /Assets/: Contains all the assets, scripts, and resources used in the Unity project.
+- |-Scripts/: Includes C# scripts for the bootstrap manager and other components.
+- |-Scenes/: Holds the Unity scenes, including the "MainMenu" scene.
+- |-Config/: Stores configuration files like `engine.ini`.
 ```
 ## Contributing
 
