@@ -2,6 +2,8 @@
 
 Welcome to the DialogosProject repository! This repository contains the Unity project for the Dialogos system, an advanced platform for training AI agents using machine learning techniques. The project leverages Unity's ML-Agents toolkit to create a robust environment for non-deterministic and fully stochastic agent behavior.
 
+This project is part of a parent project found here: https://github.com/NaXzyu/Dialogos
+
 ## Getting Started
 
 To get started with the DialogosProject, clone this repository to your local machine using your preferred Git client.
