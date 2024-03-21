@@ -29,12 +29,14 @@ After a successful boot sequence, the system transitions to a "MainMenu" scene, 
 The Dialogos system is designed to train multiple AI agents concurrently, each with a different starting seed to ensure varied learning experiences. The number of concurrent agents and other settings can be configured in the `engine.ini` file.
 
 ## Project Structure
+The following is a breif high level description of the projects directory structure:
 
-- `Assets/`: Contains all the assets, scripts, and resources used in the Unity project.
-- `Scripts/`: Includes C# scripts for the bootstrap manager and other components.
-- `Scenes/`: Holds the Unity scenes, including the "MainMenu" scene.
-- `Config/`: Stores configuration files like `engine.ini`.
-
+```
+- `/Assets/`: Contains all the assets, scripts, and resources used in the Unity project.
+- `|-Scripts/`: Includes C# scripts for the bootstrap manager and other components.
+- `|-Scenes/`: Holds the Unity scenes, including the "MainMenu" scene.
+- `|-Config/`: Stores configuration files like `engine.ini`.
+```
 ## Contributing
 
 We welcome contributions to the DialogosProject! Please read our contributing guidelines before submitting pull requests.
