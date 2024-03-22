@@ -9,8 +9,8 @@ public class Bootstrap : MonoBehaviour
 {
     [SerializeField] TextAsset BootFile;
     public const string k_PostBoot = "post.dil";
-    public const string k_Bootstrap = ".bootstrap";
-    public const string k_WelcomeMsg = "welcome";
+    public const string k_Bootstrap = "bootstrap.unityboot";
+    public const string k_WelcomeMsg = "welcome.message";
     public const string k_Interpreter = "ScriptInterpreter";
     public static readonly string[] LineSeparators = new[] { "\r\n", "\r", "\n" };
 
@@ -32,14 +32,8 @@ public class Bootstrap : MonoBehaviour
 
     public void Reboot()
     {
-        Terminal.Log("[BOOT] Rebooting...");
-        StartCoroutine(WaitAndQuit());
-    }
-
-    IEnumerator WaitAndQuit()
-    {
-        yield return new WaitForSeconds(1);
-        Utility.Quit();
+        Terminal.Log("[BOOT] Rebooting with BootManager...");
+        BootManager.Instance.RebootGame();
     }
 
     IEnumerator BootSequence()
@@ -61,13 +55,21 @@ public class Bootstrap : MonoBehaviour
             "LoadEntityData",
             "StartAsyncJobs"
         };
-
-        File.WriteAllLines(k_Bootstrap, _defaultCommands);
-
-        // TODO verify by loading text asset into BootFile after we wrote to it.
-
-        Terminal.Log($"[BOOT] Created new bootstrap file at: {k_Bootstrap}");
+        File.WriteAllLines(Path.Combine(Application.dataPath, "Resources", k_Bootstrap), _defaultCommands);
+        string _filePath = Path.Combine("Assets/Resources", k_Bootstrap);
+        BootFile = Resources.Load<TextAsset>(k_Bootstrap);
+        if (BootFile != null)
+        {
+            Terminal.Log($"[BOOT] Verification successful, bootstrap file loaded: {_filePath}");
+        }
+        else
+        {
+            Terminal.LogError("[BOOT] Verification failed, bootstrap file not loaded.");
+        }
+        Terminal.Log($"[BOOT] Created new bootstrap file at: {_filePath}");
     }
+
+
 
     void PrintWelcomeMessage()
     {

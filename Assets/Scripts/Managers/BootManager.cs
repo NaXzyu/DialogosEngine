@@ -40,18 +40,16 @@ public class BootManager : MonoBehaviour
 
     private IEnumerator RebootGameCoroutine()
     {
-        for (int i = 0; i < SceneManager.sceneCount; i++)
+        yield return SceneManager.LoadSceneAsync("_");
+        foreach (var go in SceneManager.GetActiveScene().GetRootGameObjects())
         {
-            Scene scene = SceneManager.GetSceneAt(i);
-            SceneManager.UnloadSceneAsync(scene);
+            if (go.transform.parent == null) // This means it's a root object
+            {
+                Destroy(go);
+            }
         }
 
-        yield return new WaitUntil(() => SceneManager.sceneCount == 0);
-
         yield return new WaitForSeconds(3);
-
-        // Load the BootScene again
-        SceneManager.LoadScene(0);
+        yield return SceneManager.LoadSceneAsync("BootScene");
     }
-
 }
