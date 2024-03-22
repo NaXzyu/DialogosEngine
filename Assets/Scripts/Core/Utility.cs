@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BootstrapUtil
+public class Utility
 {
     public static void Quit()
     {

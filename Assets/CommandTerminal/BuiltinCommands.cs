@@ -53,7 +53,7 @@ namespace CommandTerminal
         [RegisterCommand(Help = "Quits running Application", MaxArgCount = 0)]
         public static void CommandQuit(CommandArg[] args)
         {
-            BootstrapUtil.Quit();
+            Utility.Quit();
         }
 
         public static string JoinArguments(CommandArg[] args)
