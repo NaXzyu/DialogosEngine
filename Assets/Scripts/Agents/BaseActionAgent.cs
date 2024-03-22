@@ -14,7 +14,8 @@ public class BaseActionAgent : Agent
         base.Initialize();
         knowledgeBase = new Dictionary<string, string>();
         // Prepopulate the knowledge base with known words and their meanings
-        knowledgeBase.Add("hello", "A greeting used when meeting someone.");
+        knowledgeBase.Add("hello `{person}`", "A greeting used when meeting someone.");
+        knowledgeBase.Add("What is `{word}`", "A description of something");
     }
 
     // Method to process user input
