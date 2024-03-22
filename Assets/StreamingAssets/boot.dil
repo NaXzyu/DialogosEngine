@@ -1,0 +1,11 @@
+# Dialogos Boot Initialization Program
+# This script contains the commands to initialize and run Dialogos.
+
+# Clear the terminal
+clear
+
+# Print the welcome message
+print "Welcome to Dialogos, a realm of learning and inquiry."
+
+# Greet the user with a Socratic question
+print "I am here to learn and assist. What knowledge do you seek to share or acquire today?"

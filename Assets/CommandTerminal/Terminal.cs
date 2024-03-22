@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace CommandTerminal
@@ -315,7 +316,7 @@ namespace CommandTerminal
 
             if (IssuedError)
             {
-                Log(TerminalLogType.Error, "Error: {0}", Shell.IssuedErrorMessage);
+                Log(TerminalLogType.Error, "[ERR] {0}", Shell.IssuedErrorMessage);
             }
 
             command_text = "";
@@ -359,6 +360,16 @@ namespace CommandTerminal
                 case TerminalLogType.ShellMessage: return ShellColor;
                 default: return ErrorColor;
             }
+        }
+
+        public static void LogError(string message)
+        {
+            Shell.IssueErrorMessage($"{message}");
+        }
+
+        public static void LogWarning(string message)
+        {
+            Log($"[WARN] {message}");
         }
     }
 }

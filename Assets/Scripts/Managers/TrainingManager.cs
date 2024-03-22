@@ -1,54 +1,106 @@
+using UnityEngine;
 using System.Diagnostics;
 using System.IO;
-using UnityEngine;
+using CommandTerminal;
+using System.Collections.Generic;
 
 public class TrainingManager : MonoBehaviour
 {
-    // Path to the training script
-    private string trainingScriptPath = "bin\\train.bat";
+    public static TrainingManager Instance { get; private set; }
 
-    // Method to start the training process
+    [SerializeField] private string _trainingScriptPath = "bin\\train.bat";
+    public delegate void TrainingStatusHandler(string status);
+    public event TrainingStatusHandler OnTrainingStatusChanged;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     public void StartTraining()
     {
         ProcessStartInfo startInfo = new ProcessStartInfo
         {
-            FileName = trainingScriptPath,
+            FileName = Path.Combine(Application.streamingAssetsPath, _trainingScriptPath),
             RedirectStandardOutput = true,
             UseShellExecute = false,
             CreateNoWindow = true
         };
 
-        Process process = new Process { StartInfo = startInfo };
-        process.Start();
+        try
+        {
+            Process process = new Process { StartInfo = startInfo };
+            process.Start();
+            process.OutputDataReceived += (sender, args) =>
+            {
+                if (!string.IsNullOrEmpty(args.Data))
+                {
+                    Terminal.Log($"[TRAIN] {args.Data}");
+                }
+            };
+            process.BeginOutputReadLine();
+            process.WaitForExit();
 
-        // Asynchronously read the standard output of the spawned process.
-        StreamReader reader = process.StandardOutput;
-        string output = reader.ReadToEnd();
-
-        // Write the redirected output to the console.
-        UnityEngine.Debug.Log(output);
-
-        process.WaitForExit();
+            OnTrainingStatusChanged?.Invoke("Training completed successfully.");
+        }
+        catch (System.Exception e)
+        {
+            Terminal.LogError($"[TRAIN] Failed to start training process: {e.Message}");
+            OnTrainingStatusChanged?.Invoke("Training failed to start.");
+        }
     }
 
-    // Method to prepare training data
+    public void SaveTrainingData(Dictionary<string, string> dialogueTurns)
+    {
+        string trainingDataPath = Path.Combine(Application.streamingAssetsPath, "training_data.txt");
+        using (StreamWriter writer = new StreamWriter(trainingDataPath, true))
+        {
+            foreach (var turn in dialogueTurns)
+            {
+                writer.WriteLine($"{turn.Key}\t{turn.Value}");
+            }
+        }
+    }
+
+    public bool IsTrainingDataAvailable()
+    {
+        string trainingDataPath = Path.Combine(Application.streamingAssetsPath, "training_data.txt");
+        FileInfo fileInfo = new FileInfo(trainingDataPath);
+        return fileInfo.Exists && fileInfo.Length > 1024;
+    }
+
     public void PrepareTrainingData()
     {
-        // Logic to prepare training data before starting the training process
-        // This could involve formatting dialogue turns, balancing datasets, etc.
+        // TODO Logic to prepare training data before starting the training process
+
+        // TODO Logic for formatting dialogue turns, balancing datasets, etc.
+
+        OnTrainingStatusChanged?.Invoke("Preparing training data...");
     }
 
-    // Method to monitor training progress
     public void MonitorTraining()
     {
-        // Logic to monitor the training process
-        // This could involve checking for completion, tracking metrics, etc.
+        // TODO Logic to monitor the training process
+
+        // TODO logic for checking for completion, tracking metrics, etc.
+
+        OnTrainingStatusChanged?.Invoke("Monitoring training process...");
     }
 
-    // Method to handle post-training tasks
     public void PostTraining()
     {
-        // Logic to handle tasks after training is complete
-        // This could involve evaluating the model, saving the model, etc.
+        // TODO Logic to handle tasks after training is complete
+
+        // TODO logic for evaluating the model, saving the model, etc.
+
+        OnTrainingStatusChanged?.Invoke("Post-training tasks underway...");
     }
 }

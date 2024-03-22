@@ -7,13 +7,13 @@ namespace CommandTerminal
     public static class BuiltinCommands
     {
         [RegisterCommand(Help = "Clears the Command Console", MaxArgCount = 0)]
-        static void CommandClear(CommandArg[] args)
+        public static void CommandClear(CommandArg[] args)
         {
             Terminal.Buffer.Clear();
         }
 
         [RegisterCommand(Help = "Lists all Commands or displays Command help", MaxArgCount = 1)]
-        static void CommandHelp(CommandArg[] args)
+        public static void CommandHelp(CommandArg[] args)
         {
             if (args.Length == 0)
             {
@@ -45,18 +45,18 @@ namespace CommandTerminal
         }
 
         [RegisterCommand(Help = "Outputs message")]
-        static void CommandPrint(CommandArg[] args)
+        public static void CommandPrint(CommandArg[] args)
         {
             Terminal.Log(JoinArguments(args));
         }
 
         [RegisterCommand(Help = "Quits running Application", MaxArgCount = 0)]
-        static void CommandQuit(CommandArg[] args)
+        public static void CommandQuit(CommandArg[] args)
         {
             BootstrapUtil.Quit();
         }
 
-        static string JoinArguments(CommandArg[] args)
+        public static string JoinArguments(CommandArg[] args)
         {
             var sb = new StringBuilder();
             int arg_length = args.Length;
