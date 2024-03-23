@@ -1,10 +1,39 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using CommandTerminal;
 
 public class BootManager : MonoBehaviour
 {
     private static BootManager _instance;
+    public const string k_CoroutineManager = "CoroutineManager";
+    public const string k_BootManager = "_BootManager";
+    public const string k_BootSceneName = "BootScene";
+    public const string k_TempScene = "_";
+
+    private class CoroutineManager : MonoBehaviour
+    {
+        private static CoroutineManager _coroutineInstance;
+
+        public static CoroutineManager Instance
+        {
+            get
+            {
+                if (_coroutineInstance == null)
+                {
+                    var _managerObj = new GameObject(k_CoroutineManager);
+                    _coroutineInstance = _managerObj.AddComponent<CoroutineManager>();
+                    DontDestroyOnLoad(_managerObj);
+                }
+                return _coroutineInstance;
+            }
+        }
+
+        public void StartPostDestructCoroutine(IEnumerator coroutine)
+        {
+            StartCoroutine(coroutine);
+        }
+    }
 
     public static BootManager Instance
     {
@@ -12,7 +41,7 @@ public class BootManager : MonoBehaviour
         {
             if (_instance == null)
             {
-                var bootManagerObj = new GameObject("_BootManager");
+                var bootManagerObj = new GameObject(k_BootManager);
                 _instance = bootManagerObj.AddComponent<BootManager>();
                 DontDestroyOnLoad(bootManagerObj);
             }
@@ -20,12 +49,18 @@ public class BootManager : MonoBehaviour
         }
     }
 
+    public void SelfDestruct()
+    {
+        CoroutineManager.Instance.StartPostDestructCoroutine(PostDestructCoroutine());
+        Destroy(gameObject);
+    }
+
     void Awake()
     {
         if (_instance == null)
         {
             _instance = this;
-            DontDestroyOnLoad(this.gameObject);
+            DontDestroyOnLoad(gameObject);
         }
         else if (_instance != this)
         {
@@ -33,23 +68,37 @@ public class BootManager : MonoBehaviour
         }
     }
 
-    public void RebootGame()
+    private IEnumerator LoadBootScene()
     {
-        StartCoroutine(RebootGameCoroutine());
-    }
+        Terminal.Log("[BOOT] Loading BootScene...");
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(k_BootSceneName);
 
-    private IEnumerator RebootGameCoroutine()
-    {
-        yield return SceneManager.LoadSceneAsync("_");
-        foreach (var go in SceneManager.GetActiveScene().GetRootGameObjects())
+        while (!asyncLoad.isDone)
         {
-            if (go.transform.parent == null) // This means it's a root object
-            {
-                Destroy(go);
-            }
+            yield return null;
         }
 
-        yield return new WaitForSeconds(3);
-        yield return SceneManager.LoadSceneAsync("BootScene");
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(k_BootSceneName));
+        Terminal.Log("[BOOT] BootScene loaded and set active");
+    }
+
+    private IEnumerator WaitForBootScene()
+    {
+        while (SceneManager.GetActiveScene().name != k_BootSceneName)
+        {
+            yield return null;
+        }
+    }
+
+    private void UnloadTemporaryScene(Scene tempScene)
+    {
+        SceneManager.UnloadSceneAsync(tempScene);
+    }
+
+    private IEnumerator PostDestructCoroutine()
+    {
+        yield return LoadBootScene();
+        yield return WaitForBootScene();
+        UnloadTemporaryScene(SceneManager.GetSceneByName(k_TempScene));
     }
 }

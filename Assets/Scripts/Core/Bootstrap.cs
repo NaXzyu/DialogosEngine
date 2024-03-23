@@ -1,79 +1,58 @@
 using UnityEngine;
-using System.IO;
 using CommandTerminal;
 using System.Collections;
 using System;
-using System.Reflection;
 
 public class Bootstrap : MonoBehaviour
 {
     [SerializeField] TextAsset BootFile;
+    [SerializeField] bool _clearPostBoot = false;
     public const string k_PostBoot = "post.dil";
-    public const string k_Bootstrap = "bootstrap.unityboot";
-    public const string k_WelcomeMsg = "welcome.message";
+    public const string k_Bootstrap = "bootstrap";
+    public const string k_Welcome = "welcome";
     public const string k_Interpreter = "ScriptInterpreter";
     public static readonly string[] LineSeparators = new[] { "\r\n", "\r", "\n" };
 
     private void Start()
     {
-        BootFile = Resources.Load<TextAsset>(k_Bootstrap);
+        Terminal.Log("[BOOT] Attempting to load bootstrap file...");
+        BootFile = Resources.Load<TextAsset>("bootstrap");
+
         if (BootFile == null)
         {
-            Terminal.Log("[BOOT] Bootstrap missing, creating a new one...");
-            CreateBootstrap();
-            Reboot();
+            Terminal.LogError("[BOOT] ERROR: Bootstrap file missing, unable to boot.");
+            StartCoroutine(WaitAndQuit());
         }
         else
         {
-            Terminal.Log("[BOOT] Bootstrap OKAY!");
+            Terminal.Log("[BOOT] Bootstrap file loaded successfully.");
             StartCoroutine(BootSequence());
         }
     }
 
-    public void Reboot()
+    IEnumerator WaitAndQuit()
     {
-        Terminal.Log("[BOOT] Rebooting with BootManager...");
-        BootManager.Instance.RebootGame();
+        Terminal.Log("[BOOT] Waiting 3 seconds before quitting...");
+        yield return new WaitForSeconds(3);
+        Terminal.Log("[BOOT] Quitting application");
+        Utility.Quit();
     }
 
     IEnumerator BootSequence()
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(3);
         PrintWelcomeMessage();
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(3);
         PrintBootMessage(BootFile);
         yield return new WaitForSeconds(3);
         PostBoot();
-        yield return new WaitForSeconds(1);
-        ClearTerminal();
+        yield return new WaitForSeconds(3);
+        if (_clearPostBoot) ClearTerminal();
     }
-
-    private void CreateBootstrap()
-    {
-        string[] _defaultCommands = {
-            "InitializeSystem",
-            "LoadEntityData",
-            "StartAsyncJobs"
-        };
-        File.WriteAllLines(Path.Combine(Application.dataPath, "Resources", k_Bootstrap), _defaultCommands);
-        string _filePath = Path.Combine("Assets/Resources", k_Bootstrap);
-        BootFile = Resources.Load<TextAsset>(k_Bootstrap);
-        if (BootFile != null)
-        {
-            Terminal.Log($"[BOOT] Verification successful, bootstrap file loaded: {_filePath}");
-        }
-        else
-        {
-            Terminal.LogError("[BOOT] Verification failed, bootstrap file not loaded.");
-        }
-        Terminal.Log($"[BOOT] Created new bootstrap file at: {_filePath}");
-    }
-
-
 
     void PrintWelcomeMessage()
     {
-        TextAsset welcomeMessageAsset = Resources.Load<TextAsset>(k_WelcomeMsg);
+        TextAsset welcomeMessageAsset = Resources.Load<TextAsset>(k_Welcome);
         if (welcomeMessageAsset != null)
         {
             string[] lines = welcomeMessageAsset.text.Split(LineSeparators, StringSplitOptions.None);
@@ -85,7 +64,7 @@ public class Bootstrap : MonoBehaviour
         }
         else
         {
-            Terminal.LogError("[BOOT] Welcome message file not found in Assets/Resources.");
+            Terminal.LogError("[BOOT] Welcome file not found in Assets/Resources");
         }
     }
 
@@ -106,8 +85,6 @@ public class Bootstrap : MonoBehaviour
 
     void PostBoot()
     {
-        Terminal.Log("[BOOT] POST...");
-
         ScriptInterpreter scriptInterpreter = ScriptInterpreter.CreateInstance(k_Interpreter);
         if (scriptInterpreter != null)
         {
@@ -119,6 +96,4 @@ public class Bootstrap : MonoBehaviour
             Terminal.LogError("[BOOT] ScriptInterpreter: Verification failed");
         }
     }
-
-
 }

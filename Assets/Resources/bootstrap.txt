@@ -1,0 +1,26 @@
+# Scene Control Language (SCL)
+# Version 1.0
+
+# Bootstrap Definitions
+
+# Scene Management
+CreateScene
+LoadScene
+UnloadScene
+SetCamera
+SetLight
+
+# Object Management
+CreateObject
+SetTransform
+
+# Component Management
+AddComponent
+RemoveComponent
+UpdateComponent
+ResetComponent
+
+# Utility Commands
+PrintToConsole
+ClearConsole
+HideConsole

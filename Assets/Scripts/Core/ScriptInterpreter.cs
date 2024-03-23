@@ -17,18 +17,18 @@ public class ScriptInterpreter : MonoBehaviour
             ScriptInterpreter instance = Instantiate(scriptInterpreterPrefab).GetComponent<ScriptInterpreter>();
             if (instance != null)
             {
-                Terminal.Log("[SCRIPT] ScriptInterpreter loaded successfully");
+                Terminal.Log("[SCPT] ScriptInterpreter loaded successfully");
                 return instance;
             }
             else
             {
-                Terminal.LogError("[SCRIPT] ScriptInterpreter component not found on prefab.");
+                Terminal.LogError("[SCPT] ScriptInterpreter component not found on prefab.");
                 return null;
             }
         }
         else
         {
-            Terminal.LogError("[SCRIPT] Failed to load ScriptInterpreter prefab. Please ensure it is located in the Assets/Resources folder.");
+            Terminal.LogError("[SCPT] Failed to load ScriptInterpreter prefab. Please ensure it is located in the Assets/Resources folder.");
             return null;
         }
     }
@@ -48,7 +48,7 @@ public class ScriptInterpreter : MonoBehaviour
         }
         else
         {
-            Terminal.LogError($"[SCRIPT] Script not found at path: {_scriptPath}");
+            Terminal.LogError($"[SCPT] Script not found at path: {_scriptPath}");
         }
     }
 
@@ -77,11 +77,11 @@ public class ScriptInterpreter : MonoBehaviour
 
         if (!_commandCompleted)
         {
-            Terminal.LogError($"[SCRIPT] Command execution timed out: {command}");
+            Terminal.LogError($"[SCPT] Command execution timed out: {command}");
         }
         else
         {
-            Terminal.Log($"[SCRIPT] Command execution completed: {command}");
+            Terminal.Log($"[SCPT] Command execution completed: {command}");
         }
     }
 }
