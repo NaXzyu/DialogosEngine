@@ -16,6 +16,12 @@ public class Bootstrap : MonoBehaviour
 
     private void Start()
     {
+        InitializeTerminal();
+        LoadBootstrapFile();
+    }
+
+    private void InitializeTerminal()
+    {
         _terminal = FindFirstObjectByType<Terminal>();
         if (_terminal == null)
         {
@@ -23,6 +29,10 @@ public class Bootstrap : MonoBehaviour
             Utility.Quit();
         }
         _terminal.ToggleCommandInput(false);
+    }
+
+    private void LoadBootstrapFile()
+    {
         _terminal.Log("[BOOT] Attempting to load bootstrap file...");
         BootFile = Resources.Load<TextAsset>("bootstrap");
 
@@ -55,21 +65,15 @@ public class Bootstrap : MonoBehaviour
         yield return new WaitForSeconds(1);
         PostBoot();
         yield return new WaitForSeconds(1);
-        if (_clearPostBoot) ClearTerminal();
-        _terminal.ToggleCommandInput(true);
+        FinalizeBoot();
     }
 
-    void PrintWelcomeMessage()
+    private void PrintWelcomeMessage()
     {
         TextAsset welcomeMessageAsset = Resources.Load<TextAsset>(k_Welcome);
         if (welcomeMessageAsset != null)
         {
-            string[] lines = welcomeMessageAsset.text.Split(LineSeparators, StringSplitOptions.None);
-            _terminal.Buffer.Clear();
-            foreach (string line in lines)
-            {
-                _terminal.Log("[BOOT] " + line);
-            }
+            PrintLinesFromAsset(welcomeMessageAsset, "[BOOT] ");
         }
         else
         {
@@ -77,27 +81,32 @@ public class Bootstrap : MonoBehaviour
         }
     }
 
-    void PrintBootMessage(TextAsset bootFileAsset)
+    private void PrintBootMessage(TextAsset bootFileAsset)
     {
-        string[] lines = bootFileAsset.text.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries);
+        PrintLinesFromAsset(bootFileAsset, "");
+        _terminal.Log("[BOOT] Sequence COMPLETE!");
+    }
+
+    private void PrintLinesFromAsset(TextAsset asset, string prefix)
+    {
+        string[] lines = asset.text.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries);
+        _terminal.Buffer.Clear();
         foreach (string line in lines)
         {
             if (!line.Trim().StartsWith("#") && !string.IsNullOrWhiteSpace(line))
             {
-                _terminal.Log(line);
+                _terminal.Log(prefix + line);
             }
         }
-        _terminal.Log("[BOOT] Sequence COMPLETE!");
     }
 
-
-
-    void ClearTerminal()
+    private void FinalizeBoot()
     {
-        _terminal.Buffer.Clear();
+        if (_clearPostBoot) _terminal.Buffer.Clear();
+        _terminal.ToggleCommandInput(true);
     }
 
-    void PostBoot()
+    private void PostBoot()
     {
         ScriptInterpreter scriptInterpreter = ScriptInterpreter.CreateInstance(_terminal, k_Interpreter);
         scriptInterpreter.Bind(_terminal);
