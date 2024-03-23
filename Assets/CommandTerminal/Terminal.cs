@@ -3,13 +3,6 @@ using UnityEngine;
 
 namespace CommandTerminal
 {
-    public enum TerminalState
-    {
-        Close,
-        OpenSmall,
-        OpenFull
-    }
-
     public class Terminal : MonoBehaviour
     {
         [Header("Window")]
@@ -22,14 +15,7 @@ namespace CommandTerminal
 
         [Header("Theme")]
         [SerializeField] Font ConsoleFont;
-        [SerializeField] string InputCaret = ">";
         [Range(0, 1)][SerializeField] float InputContrast;
-        [SerializeField] Color BackgroundColor = Color.black;
-        [SerializeField] Color ForegroundColor = Color.white;
-        [SerializeField] Color ShellColor = Color.white;
-        [SerializeField] Color InputColor = Color.white;
-        [SerializeField] Color WarningColor = Color.yellow;
-        [SerializeField] Color ErrorColor = Color.red;
 
         TerminalState state;
         TextEditor editor_state;
@@ -183,15 +169,14 @@ namespace CommandTerminal
             real_window_size = Screen.height * MaxHeight / 3;
             window = new Rect(0, current_open_t - real_window_size, Screen.width, real_window_size);
 
-            // Set background color
             Texture2D background_texture = new Texture2D(1, 1);
-            background_texture.SetPixel(0, 0, BackgroundColor);
+            background_texture.SetPixel(0, 0, TerminalUtils.BackgroundColor);
             background_texture.Apply();
 
             window_style = new GUIStyle();
             window_style.normal.background = background_texture;
             window_style.padding = new RectOffset(4, 4, 4, 4);
-            window_style.normal.textColor = ForegroundColor;
+            window_style.normal.textColor = TerminalUtils.ForegroundColor;
             window_style.font = ConsoleFont;
         }
 
@@ -199,7 +184,7 @@ namespace CommandTerminal
         {
             label_style = new GUIStyle();
             label_style.font = ConsoleFont;
-            label_style.normal.textColor = ForegroundColor;
+            label_style.normal.textColor = TerminalUtils.ForegroundColor;
             label_style.wordWrap = true;
         }
 
@@ -209,12 +194,12 @@ namespace CommandTerminal
             input_style.padding = new RectOffset(4, 4, 4, 4);
             input_style.font = ConsoleFont;
             input_style.fixedHeight = ConsoleFont.fontSize * 1.6f;
-            input_style.normal.textColor = InputColor;
+            input_style.normal.textColor = TerminalUtils.InputColor;
 
             var dark_background = new Color();
-            dark_background.r = BackgroundColor.r - InputContrast;
-            dark_background.g = BackgroundColor.g - InputContrast;
-            dark_background.b = BackgroundColor.b - InputContrast;
+            dark_background.r = TerminalUtils.BackgroundColor.r - InputContrast;
+            dark_background.g = TerminalUtils.BackgroundColor.g - InputContrast;
+            dark_background.b = TerminalUtils.BackgroundColor.b - InputContrast;
             dark_background.a = 0.5f;
 
             Texture2D input_background_texture = new Texture2D(1, 1);
@@ -257,7 +242,7 @@ namespace CommandTerminal
             }
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(InputCaret, input_style, GUILayout.Width(ConsoleFont.fontSize));
+            GUILayout.Label(TerminalUtils.InputCaret, input_style, GUILayout.Width(ConsoleFont.fontSize));
             GUI.SetNextControlName("command_text_field");
             command_text = GUILayout.TextField(command_text, input_style);
 
@@ -281,7 +266,7 @@ namespace CommandTerminal
         {
             foreach (var log in Buffer.Logs)
             {
-                label_style.normal.textColor = GetLogColor(log.type);
+                label_style.normal.textColor = TerminalUtils.GetLogColor(log.type);
                 GUILayout.Label(log.message, label_style);
             }
         }
@@ -348,18 +333,6 @@ namespace CommandTerminal
             }
 
             editor_state.MoveCursorToPosition(new Vector2(999, 999));
-        }
-
-        Color GetLogColor(TerminalLogType type)
-        {
-            switch (type)
-            {
-                case TerminalLogType.Message: return ForegroundColor;
-                case TerminalLogType.Warning: return WarningColor;
-                case TerminalLogType.Input: return InputColor;
-                case TerminalLogType.ShellMessage: return ShellColor;
-                default: return ErrorColor;
-            }
         }
 
         public static void LogError(string message)
