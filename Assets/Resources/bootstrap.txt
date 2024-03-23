@@ -7,15 +7,29 @@
 Register
 Unregister
 
-# File Operations
-Register OpenFile
-Register SaveFile
-Register DeleteFile
+# Help Command
+Register ShowHelp
 
 # System Information
 Register GetSystemInfo
 Register GetDate
 Register GetTime
+
+# System Performance and Diagnostics
+Register RunDiagnostics
+Register GetProcUsage
+Register GetMemoryUsage
+
+# Directory Operations
+Register CreateDirectory
+Register DeleteDirectory
+Register ListDirectoryContents
+Register ChangeDirectory
+
+# File Operations
+Register OpenFile
+Register SaveFile
+Register DeleteFile
 
 # Networking
 Register ConnectToNetwork
@@ -33,25 +47,20 @@ Register SetPermissions
 Register GetPermissions
 
 # Application Management
-Register InstallApplication
-Register UninstallApplication
-Register UpdateApplication
-
-# System Performance and Diagnostics
-Register RunDiagnostics
-Register GetCPUUsage
-Register GetMemoryUsage
+Register InstallProgram
+Register UninstallProgram
+Register UpdateProgram
 
 # Scene Management
 Register CreateScene
 Register LoadScene
 Register UnloadScene
-Register SetCamera
-Register SetLight
+Register SetObject
 
 # Object Management
 Register CreateObject
 Register SetTransform
+Register DestroyObject
 
 # Component Management
 Register AddComponent
@@ -63,3 +72,30 @@ Register ResetComponent
 Register PrintToConsole
 Register ClearConsole
 Register HideConsole
+Register QuitApplication
+
+# Debugging Commands
+Register EnableDebugMode
+Register DisableDebugMode
+Register LogMessage
+
+# Error Handling Commands
+Register OnError
+Register TryCatchBlock
+
+# Feedback Commands
+Register PromptUser
+Register DisplayAlert
+
+# Script Control Commands
+Register AddScript
+Register RemoveScript
+Register StartScript
+Register PauseScript
+Register ResumeScript
+Register StopScript
+
+# Event Handling Commands
+Register OnEvent
+Register AddEvent
+Register RemoveEvent

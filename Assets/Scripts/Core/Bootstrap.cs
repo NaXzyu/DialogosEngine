@@ -47,7 +47,7 @@ public class Bootstrap : MonoBehaviour
 
     IEnumerator BootSequence()
     {
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(1);
         PrintWelcomeMessage();
         yield return new WaitForSeconds(3);
         PrintBootMessage(BootFile);
@@ -77,13 +77,18 @@ public class Bootstrap : MonoBehaviour
 
     void PrintBootMessage(TextAsset bootFileAsset)
     {
-        string[] lines = bootFileAsset.text.Split(LineSeparators, StringSplitOptions.None);
+        string[] lines = bootFileAsset.text.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries);
         foreach (string line in lines)
         {
-            _terminal.Log(line);
+            if (!line.Trim().StartsWith("#") && !string.IsNullOrWhiteSpace(line))
+            {
+                _terminal.Log(line);
+            }
         }
         _terminal.Log("[BOOT] Sequence COMPLETE!");
     }
+
+
 
     void ClearTerminal()
     {

@@ -43,13 +43,16 @@ public class ScriptInterpreter : MonoBehaviour
     public void LoadAndExecuteScript(string scriptName, Queue<string> queue)
     {
         commandQueue = queue;
-        string _scriptPath = Path.Combine(Application.streamingAssetsPath, $"{scriptName}", k_ScriptExtension);
+        string _scriptPath = Path.Combine(Application.streamingAssetsPath, $"{scriptName}{k_ScriptExtension}");
         if (File.Exists(_scriptPath))
         {
             string[] _commands = File.ReadAllLines(_scriptPath);
             foreach (string _command in _commands)
             {
-                commandQueue.Enqueue(_command);
+                if (!_command.TrimStart().StartsWith("#"))
+                {
+                    commandQueue.Enqueue(_command);
+                }
             }
             StartCoroutine(ExecuteCommands());
         }
@@ -58,6 +61,7 @@ public class ScriptInterpreter : MonoBehaviour
             _terminal.LogError($"[SCPT] Script not found at path: {_scriptPath}");
         }
     }
+
 
     public void InitializeAndExecuteScript(string scriptName)
     {
