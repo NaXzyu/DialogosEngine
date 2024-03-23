@@ -11,6 +11,7 @@ public class TrainingManager : MonoBehaviour
     [SerializeField] private string _trainingScriptPath = "bin\\train.bat";
     public delegate void TrainingStatusHandler(string status);
     public event TrainingStatusHandler OnTrainingStatusChanged;
+    private Terminal _terminal;
 
     private void Awake()
     {
@@ -23,6 +24,11 @@ public class TrainingManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    public Terminal Bind(Terminal terminal)
+    {
+        return _terminal = terminal;
     }
 
     public void StartTraining()
@@ -43,7 +49,7 @@ public class TrainingManager : MonoBehaviour
             {
                 if (!string.IsNullOrEmpty(args.Data))
                 {
-                    Terminal.Log($"[TRAIN] {args.Data}");
+                    _terminal.Log($"[TRAIN] {args.Data}");
                 }
             };
             process.BeginOutputReadLine();
@@ -53,7 +59,7 @@ public class TrainingManager : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            Terminal.LogError($"[TRAIN] Failed to start training process: {e.Message}");
+            _terminal.LogError($"[TRAIN] Failed to start training process: {e.Message}");
             OnTrainingStatusChanged?.Invoke("Training failed to start.");
         }
     }

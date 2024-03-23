@@ -21,7 +21,7 @@ public class Kernel
 
     private Kernel() { }
 
-    public void AddCommand(string commandName, Action commandDelegate)
+    public void AddCommand(Terminal terminal, string commandName, Action commandDelegate)
     {
         if (!commandDelegates.ContainsKey(commandName))
         {
@@ -30,11 +30,11 @@ public class Kernel
         }
         else
         {
-            Terminal.LogWarning($"[KERNEL] The command '{commandName}' is already registered.");
+            terminal.LogWarning($"[KERNEL] The command '{commandName}' is already registered.");
         }
     }
 
-    public void ExecuteCommand(string commandName)
+    public void ExecuteCommand(Terminal terminal, string commandName)
     {
         if (commandDelegates.TryGetValue(commandName, out Action commandDelegate))
         {
@@ -43,11 +43,11 @@ public class Kernel
         }
         else
         {
-            Terminal.LogError($"[KERNEL] The command '{commandName}' does not exist.");
+            terminal.LogError($"[KERNEL] The command '{commandName}' does not exist.");
         }
     }
 
-    public void RemoveCommand(string commandName)
+    public void RemoveCommand(Terminal terminal, string commandName)
     {
         if (commandDelegates.ContainsKey(commandName))
         {
@@ -56,7 +56,7 @@ public class Kernel
         }
         else
         {
-            Terminal.LogError($"[KERNEL] The command '{commandName}' cannot be removed because it does not exist.");
+            terminal.LogError($"[KERNEL] The command '{commandName}' cannot be removed because it does not exist.");
         }
     }
 

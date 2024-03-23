@@ -3,24 +3,63 @@
 
 # Bootstrap Definitions
 
+# System Commands
+Register
+Unregister
+
+# File Operations
+Register OpenFile
+Register SaveFile
+Register DeleteFile
+
+# System Information
+Register GetSystemInfo
+Register GetDate
+Register GetTime
+
+# Networking
+Register ConnectToNetwork
+Register DisconnectFromNetwork
+Register SendData
+Register ReceiveData
+
+# User Account Management
+Register CreateUser
+Register DeleteUser
+Register ChangePassword
+
+# Permissions Management
+Register SetPermissions
+Register GetPermissions
+
+# Application Management
+Register InstallApplication
+Register UninstallApplication
+Register UpdateApplication
+
+# System Performance and Diagnostics
+Register RunDiagnostics
+Register GetCPUUsage
+Register GetMemoryUsage
+
 # Scene Management
-CreateScene
-LoadScene
-UnloadScene
-SetCamera
-SetLight
+Register CreateScene
+Register LoadScene
+Register UnloadScene
+Register SetCamera
+Register SetLight
 
 # Object Management
-CreateObject
-SetTransform
+Register CreateObject
+Register SetTransform
 
 # Component Management
-AddComponent
-RemoveComponent
-UpdateComponent
-ResetComponent
+Register AddComponent
+Register RemoveComponent
+Register UpdateComponent
+Register ResetComponent
 
 # Utility Commands
-PrintToConsole
-ClearConsole
-HideConsole
+Register PrintToConsole
+Register ClearConsole
+Register HideConsole

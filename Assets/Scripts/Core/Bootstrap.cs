@@ -12,29 +12,36 @@ public class Bootstrap : MonoBehaviour
     public const string k_Welcome = "welcome";
     public const string k_Interpreter = "ScriptInterpreter";
     public static readonly string[] LineSeparators = new[] { "\r\n", "\r", "\n" };
+    private Terminal _terminal;
 
     private void Start()
     {
-        Terminal.Log("[BOOT] Attempting to load bootstrap file...");
+        _terminal = FindFirstObjectByType<Terminal>();
+        if (_terminal == null)
+        {
+            Debug.LogError("Unable to find the terminal");
+            Utility.Quit();
+        }
+        _terminal.Log("[BOOT] Attempting to load bootstrap file...");
         BootFile = Resources.Load<TextAsset>("bootstrap");
 
         if (BootFile == null)
         {
-            Terminal.LogError("[BOOT] ERROR: Bootstrap file missing, unable to boot.");
+            _terminal.LogError("[BOOT] ERROR: Bootstrap file missing, unable to boot.");
             StartCoroutine(WaitAndQuit());
         }
         else
         {
-            Terminal.Log("[BOOT] Bootstrap file loaded successfully.");
+            _terminal.Log("[BOOT] Bootstrap file loaded successfully.");
             StartCoroutine(BootSequence());
         }
     }
 
     IEnumerator WaitAndQuit()
     {
-        Terminal.Log("[BOOT] Waiting 3 seconds before quitting...");
+        _terminal.Log("[BOOT] Waiting 3 seconds before quitting...");
         yield return new WaitForSeconds(3);
-        Terminal.Log("[BOOT] Quitting application");
+        _terminal.Log("[BOOT] Quitting application");
         Utility.Quit();
     }
 
@@ -56,15 +63,15 @@ public class Bootstrap : MonoBehaviour
         if (welcomeMessageAsset != null)
         {
             string[] lines = welcomeMessageAsset.text.Split(LineSeparators, StringSplitOptions.None);
-            Terminal.Buffer.Clear();
+            _terminal.Buffer.Clear();
             foreach (string line in lines)
             {
-                Terminal.Log("[BOOT] " + line);
+                _terminal.Log("[BOOT] " + line);
             }
         }
         else
         {
-            Terminal.LogError("[BOOT] Welcome file not found in Assets/Resources");
+            _terminal.LogError("[BOOT] Welcome file not found in Assets/Resources");
         }
     }
 
@@ -73,27 +80,28 @@ public class Bootstrap : MonoBehaviour
         string[] lines = bootFileAsset.text.Split(LineSeparators, StringSplitOptions.None);
         foreach (string line in lines)
         {
-            Terminal.Log(line);
+            _terminal.Log(line);
         }
-        Terminal.Log("[BOOT] Sequence COMPLETE!");
+        _terminal.Log("[BOOT] Sequence COMPLETE!");
     }
 
     void ClearTerminal()
     {
-        Terminal.Buffer.Clear();
+        _terminal.Buffer.Clear();
     }
 
     void PostBoot()
     {
-        ScriptInterpreter scriptInterpreter = ScriptInterpreter.CreateInstance(k_Interpreter);
+        ScriptInterpreter scriptInterpreter = ScriptInterpreter.CreateInstance(_terminal, k_Interpreter);
+        scriptInterpreter.Bind(_terminal);
         if (scriptInterpreter != null)
         {
             scriptInterpreter.InitializeAndExecuteScript(k_PostBoot);
-            Terminal.Log("[BOOT] ScriptInterpreter: Verification successful");
+            _terminal.Log("[BOOT] ScriptInterpreter: Verification successful");
         }
         else
         {
-            Terminal.LogError("[BOOT] ScriptInterpreter: Verification failed");
+            _terminal.LogError("[BOOT] ScriptInterpreter: Verification failed");
         }
     }
 }

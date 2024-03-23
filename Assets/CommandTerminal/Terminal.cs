@@ -21,13 +21,13 @@ namespace CommandTerminal
         GUIStyle label_style;
         GUIStyle input_style;
 
-        public static TerminalSettings TerminalSettings { get; private set; }
-        public static CommandLog Buffer { get; private set; }
-        public static CommandShell Shell { get; private set; }
-        public static CommandHistory History { get; private set; }
-        public static CommandAutocomplete Autocomplete { get; private set; }
+        public TerminalSettings TerminalSettings { get; private set; }
+        public CommandLog Buffer { get; private set; }
+        public CommandShell Shell { get; private set; }
+        public CommandHistory History { get; private set; }
+        public CommandAutocomplete Autocomplete { get; private set; }
 
-        public static bool IssuedError
+        public bool IssuedError
         {
             get { return Shell.IssuedErrorMessage != null; }
         }
@@ -37,12 +37,12 @@ namespace CommandTerminal
             get { return state == TerminalState.Close && Mathf.Approximately(current_open_t, open_target); }
         }
 
-        public static void Log(string format, params object[] message)
+        public void Log(string format, params object[] message)
         {
             Log(TerminalLogType.ShellMessage, format, message);
         }
 
-        public static void Log(TerminalLogType type, string format, params object[] message)
+        public void Log(TerminalLogType type, string format, params object[] message)
         {
             Buffer.HandleLog(string.Format(format, message), type);
         }
@@ -115,9 +115,14 @@ namespace CommandTerminal
         {
             if (TerminalSettings.ConsoleFont == null)
             {
-                TerminalSettings.ConsoleFont = Font.CreateDynamicFontFromOSFont("Courier New", 16);
-                Debug.LogWarning("Command Console Warning: Please assign a font.");
+                TerminalSettings.ConsoleFont = Resources.Load("fonts/F25_Bank_Printer", typeof(Font)) as Font;
+                if (TerminalSettings.ConsoleFont == null)
+                {
+                    Debug.LogError("The font 'F25_Bank_Printer' could not be loaded.");
+                    Utility.Quit();
+                }
             }
+
 
             command_text = "";
             cached_command_text = command_text;
@@ -125,8 +130,6 @@ namespace CommandTerminal
             SetupWindow();
             SetupInput();
             SetupLabels();
-
-            Shell.RegisterCommands();
 
             if (IssuedError)
             {
@@ -325,12 +328,12 @@ namespace CommandTerminal
             editor_state.MoveCursorToPosition(new Vector2(999, 999));
         }
 
-        public static void LogError(string message)
+        public void LogError(string message)
         {
             Shell.IssueErrorMessage($"{message}");
         }
 
-        public static void LogWarning(string message)
+        public void LogWarning(string message)
         {
             Log($"[WARN] {message}");
         }

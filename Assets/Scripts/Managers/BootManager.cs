@@ -70,7 +70,6 @@ public class BootManager : MonoBehaviour
 
     private IEnumerator LoadBootScene()
     {
-        Terminal.Log("[BOOT] Loading BootScene...");
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(k_BootSceneName);
 
         while (!asyncLoad.isDone)
@@ -79,7 +78,6 @@ public class BootManager : MonoBehaviour
         }
 
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(k_BootSceneName));
-        Terminal.Log("[BOOT] BootScene loaded and set active");
     }
 
     private IEnumerator WaitForBootScene()

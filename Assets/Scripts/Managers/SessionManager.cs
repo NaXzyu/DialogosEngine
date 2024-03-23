@@ -11,6 +11,7 @@ public class SessionManager : MonoBehaviour
     private Dictionary<int, TerminalSession> sessions;
     private int sessionIDCounter = 0;
     private int currentSessionID;
+    private Terminal _terminal;
 
     private void Awake()
     {
@@ -23,8 +24,13 @@ public class SessionManager : MonoBehaviour
             _instance = this;
             DontDestroyOnLoad(this.gameObject);
             sessions = new Dictionary<int, TerminalSession>();
-            currentSessionID = -1; // No session is active initially
+            currentSessionID = -1;
         }
+    }
+
+    public Terminal Bind(Terminal terminal)
+    {
+        return _terminal = terminal;
     }
 
     public int CreateNewSession()
@@ -42,7 +48,7 @@ public class SessionManager : MonoBehaviour
         }
         else
         {
-            Terminal.LogError("[SESSION] Session ID not found.");
+            _terminal.LogError("[SESSION] Session ID not found.");
             return null;
         }
     }
@@ -55,18 +61,18 @@ public class SessionManager : MonoBehaviour
         }
         else
         {
-            Terminal.LogError("[SESSION] Session ID not found.");
+            _terminal.LogError("[SESSION] Session ID not found.");
         }
     }
 
     public void RegisterCommand(string commandName)
     {
-        Terminal.Shell.AddCommand(commandName, args =>
+        _terminal.Shell.AddCommand(commandName, args =>
         {
-            Kernel.Instance.ExecuteCommand(commandName);
+            Kernel.Instance.ExecuteCommand(_terminal, commandName);
         }, 0, 0, $"[SESSION] Executes the {commandName} command.");
 
-        Terminal.Log($"[SESSION] Command '{commandName}' registered.");
+        _terminal.Log($"[SESSION] Command '{commandName}' registered.");
     }
 
     public void LogCommandExecution(string commandName)
@@ -75,7 +81,7 @@ public class SessionManager : MonoBehaviour
         if (currentSession != null)
         {
             currentSession.CommandHistory.Add(commandName);
-            Terminal.Log($"[SESSION] Command '{commandName}' executed.");
+            _terminal.Log($"[SESSION] Command '{commandName}' executed.");
         }
     }
 
@@ -84,7 +90,7 @@ public class SessionManager : MonoBehaviour
 
         // TODO implement a Terminal.Shell.RemoveCommand(commandName);
 
-        Terminal.Log($"[SESSION] Command '{commandName}' unregistered.");
+        _terminal.Log($"[SESSION] Command '{commandName}' unregistered.");
     }
 
     public TerminalSession GetCurrentSession()
@@ -94,7 +100,7 @@ public class SessionManager : MonoBehaviour
 
     public void ClearAllCommands()
     {
-        Terminal.Buffer.Clear();
+        _terminal.Buffer.Clear();
     }
 
     public void SaveSession(int sessionID)
