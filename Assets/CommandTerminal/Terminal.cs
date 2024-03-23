@@ -21,9 +21,11 @@ namespace CommandTerminal
         GUIStyle label_style;
         GUIStyle input_style;
         bool _allowCommandInput = true;
-        private bool _shouldScrollToBottom = false;
-        private int _autoScrollFrameCount = 0;
-        private int _maxAutoScrollFrames = 5;
+        bool _shouldScrollToBottom = false;
+        int _autoScrollFrameCount = 0;
+        int _maxAutoScrollFrames = 5;
+        const string k_CommandTextInput = "command_text_field";
+        const string k_FontPath = "fonts/F25_Bank_Printer";
 
         public TerminalSettings TerminalSettings { get; private set; }
         public CommandLog Buffer { get; private set; }
@@ -54,41 +56,58 @@ namespace CommandTerminal
 
         public void SetState(TerminalState new_state)
         {
+            PrepareForStateChange();
+            HandleStateChange(new_state);
+            state = new_state;
+        }
+
+        private void PrepareForStateChange()
+        {
             input_fix = true;
             cached_command_text = command_text;
             command_text = "";
+        }
 
+        private void HandleStateChange(TerminalState new_state)
+        {
             switch (new_state)
             {
                 case TerminalState.Close:
-                    {
-                        open_target = 0;
-                        break;
-                    }
+                    CloseTerminal();
+                    break;
                 case TerminalState.OpenSmall:
-                    {
-                        open_target = Screen.height * TerminalSettings.MaxHeight * TerminalSettings.SmallTerminalRatio;
-                        if (current_open_t > open_target)
-                        {
-                            open_target = 0;
-                            state = TerminalState.Close;
-                            return;
-                        }
-                        real_window_size = open_target;
-                        scroll_position.y = int.MaxValue;
-                        break;
-                    }
+                    OpenTerminalSmall();
+                    break;
                 case TerminalState.OpenFull:
                 default:
-                    {
-                        real_window_size = Screen.height * TerminalSettings.MaxHeight;
-                        open_target = real_window_size;
-                        break;
-                    }
+                    OpenTerminalFull();
+                    break;
             }
-
-            state = new_state;
         }
+
+        private void CloseTerminal()
+        {
+            open_target = 0;
+        }
+
+        private void OpenTerminalSmall()
+        {
+            open_target = Screen.height * TerminalSettings.MaxHeight * TerminalSettings.SmallTerminalRatio;
+            if (current_open_t > open_target)
+            {
+                CloseTerminal();
+                return;
+            }
+            real_window_size = open_target;
+            scroll_position.y = int.MaxValue;
+        }
+
+        private void OpenTerminalFull()
+        {
+            real_window_size = Screen.height * TerminalSettings.MaxHeight;
+            open_target = real_window_size;
+        }
+
 
         public void ToggleState(TerminalState new_state)
         {
@@ -120,10 +139,10 @@ namespace CommandTerminal
         {
             if (TerminalSettings.ConsoleFont == null)
             {
-                TerminalSettings.ConsoleFont = Resources.Load("fonts/F25_Bank_Printer", typeof(Font)) as Font;
+                TerminalSettings.ConsoleFont = Resources.Load(k_FontPath, typeof(Font)) as Font;
                 if (TerminalSettings.ConsoleFont == null)
                 {
-                    Debug.LogError("The font 'F25_Bank_Printer' could not be loaded.");
+                    Debug.LogError($"The font '{k_FontPath}' could not be loaded.");
                     Utility.Quit();
                 }
             }
@@ -209,70 +228,97 @@ namespace CommandTerminal
         void DrawConsole(int Window2D)
         {
             GUILayout.BeginVertical();
+            DrawScrollView();
+            HandleCommandInput();
+            GUILayout.EndVertical();
+        }
 
+        void DrawScrollView()
+        {
             scroll_position = GUILayout.BeginScrollView(scroll_position, false, false, GUIStyle.none, GUIStyle.none);
             GUILayout.FlexibleSpace();
             DrawLogs();
             GUILayout.EndScrollView();
+            CheckScrollToBottom();
+        }
 
+        void HandleCommandInput()
+        {
             if (_allowCommandInput)
             {
-                if (move_cursor)
-                {
-                    CursorToEnd();
-                    move_cursor = false;
-                }
-                if (Event.current.Equals(Event.KeyboardEvent("return")))
-                {
-                    EnterCommand();
-                }
-                else if (Event.current.Equals(Event.KeyboardEvent("up")))
-                {
-                    command_text = History.Previous();
-                    move_cursor = true;
-                }
-                else if (Event.current.Equals(Event.KeyboardEvent("down")))
-                {
-                    command_text = History.Next();
-                }
-                else if (Event.current.Equals(Event.KeyboardEvent("tab")))
-                {
-                    CompleteCommand();
-                    move_cursor = true; // Wait till next draw call
-                }
+                HandleKeyboardEvents();
+                DrawCommandTextField();
+            }
+        }
 
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(TerminalSettings.InputCaret, input_style, GUILayout.Width(TerminalSettings.ConsoleFont.fontSize));
-                GUI.SetNextControlName("command_text_field");
-                command_text = GUILayout.TextField(command_text, input_style);
+        void HandleKeyboardEvents()
+        {
+            if (move_cursor)
+            {
+                CursorToEnd();
+                move_cursor = false;
+            }
+            if (Event.current.Equals(Event.KeyboardEvent("return")))
+            {
+                EnterCommand();
+            }
+            else if (Event.current.Equals(Event.KeyboardEvent("up")))
+            {
+                command_text = History.Previous();
+                move_cursor = true;
+            }
+            else if (Event.current.Equals(Event.KeyboardEvent("down")))
+            {
+                command_text = History.Next();
+            }
+            else if (Event.current.Equals(Event.KeyboardEvent("tab")))
+            {
+                CompleteCommand();
+                move_cursor = true; // Wait till next draw call
+            }
+        }
 
-                if (input_fix && command_text.Length > 0)
+        void DrawCommandTextField()
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(TerminalSettings.InputCaret, input_style, GUILayout.Width(TerminalSettings.ConsoleFont.fontSize));
+            GUI.SetNextControlName(k_CommandTextInput);
+            command_text = GUILayout.TextField(command_text, input_style);
+            CheckInputFix();
+            FocusOnInitialOpen();
+            GUILayout.EndHorizontal();
+        }
+
+        void CheckInputFix()
+        {
+            if (input_fix && command_text.Length > 0)
+            {
+                command_text = cached_command_text;
+                input_fix = false;
+            }
+        }
+
+        void FocusOnInitialOpen()
+        {
+            if (initial_open)
+            {
+                GUI.FocusControl(k_CommandTextInput);
+                initial_open = false;
+            }
+        }
+
+        void CheckScrollToBottom()
+        {
+            if (_shouldScrollToBottom)
+            {
+                _autoScrollFrameCount++;
+                scroll_position.y = Mathf.Infinity;
+                if (_autoScrollFrameCount < _maxAutoScrollFrames)
                 {
-                    command_text = cached_command_text;
-                    input_fix = false;
-                }
-
-                if (initial_open)
-                {
-                    GUI.FocusControl("command_text_field");
-                    initial_open = false;
-                }
-
-                GUILayout.EndHorizontal();
-
-                if (_shouldScrollToBottom)
-                {
-                    _autoScrollFrameCount++;
-                    scroll_position.y = Mathf.Infinity;
-                    if (_autoScrollFrameCount < _maxAutoScrollFrames)
-                    {
-                        _shouldScrollToBottom = false;
-                        _autoScrollFrameCount = 0;
-                    }
+                    _shouldScrollToBottom = false;
+                    _autoScrollFrameCount = 0;
                 }
             }
-
-            GUILayout.EndVertical();
         }
 
         void DrawLogs()
@@ -314,7 +360,7 @@ namespace CommandTerminal
 
             if (IssuedError)
             {
-                Log(TerminalLogType.Error, "[ERR] {0}", Shell.IssuedErrorMessage);
+                Log(TerminalLogType.Error, "{0}", Shell.IssuedErrorMessage);
             }
 
             command_text = "";
