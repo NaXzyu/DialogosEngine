@@ -20,6 +20,10 @@ namespace CommandTerminal
         GUIStyle window_style;
         GUIStyle label_style;
         GUIStyle input_style;
+        bool _allowCommandInput = true;
+        private bool _shouldScrollToBottom = false;
+        private int _autoScrollFrameCount = 0;
+        private int _maxAutoScrollFrames = 5;
 
         public TerminalSettings TerminalSettings { get; private set; }
         public CommandLog Buffer { get; private set; }
@@ -45,6 +49,7 @@ namespace CommandTerminal
         public void Log(TerminalLogType type, string format, params object[] message)
         {
             Buffer.HandleLog(string.Format(format, message), type);
+            _shouldScrollToBottom = true;
         }
 
         public void SetState(TerminalState new_state)
@@ -210,48 +215,63 @@ namespace CommandTerminal
             DrawLogs();
             GUILayout.EndScrollView();
 
-            if (move_cursor)
+            if (_allowCommandInput)
             {
-                CursorToEnd();
-                move_cursor = false;
-            }
-            if (Event.current.Equals(Event.KeyboardEvent("return")))
-            {
-                EnterCommand();
-            }
-            else if (Event.current.Equals(Event.KeyboardEvent("up")))
-            {
-                command_text = History.Previous();
-                move_cursor = true;
-            }
-            else if (Event.current.Equals(Event.KeyboardEvent("down")))
-            {
-                command_text = History.Next();
-            }
-            else if (Event.current.Equals(Event.KeyboardEvent("tab")))
-            {
-                CompleteCommand();
-                move_cursor = true; // Wait till next draw call
+                if (move_cursor)
+                {
+                    CursorToEnd();
+                    move_cursor = false;
+                }
+                if (Event.current.Equals(Event.KeyboardEvent("return")))
+                {
+                    EnterCommand();
+                }
+                else if (Event.current.Equals(Event.KeyboardEvent("up")))
+                {
+                    command_text = History.Previous();
+                    move_cursor = true;
+                }
+                else if (Event.current.Equals(Event.KeyboardEvent("down")))
+                {
+                    command_text = History.Next();
+                }
+                else if (Event.current.Equals(Event.KeyboardEvent("tab")))
+                {
+                    CompleteCommand();
+                    move_cursor = true; // Wait till next draw call
+                }
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(TerminalSettings.InputCaret, input_style, GUILayout.Width(TerminalSettings.ConsoleFont.fontSize));
+                GUI.SetNextControlName("command_text_field");
+                command_text = GUILayout.TextField(command_text, input_style);
+
+                if (input_fix && command_text.Length > 0)
+                {
+                    command_text = cached_command_text;
+                    input_fix = false;
+                }
+
+                if (initial_open)
+                {
+                    GUI.FocusControl("command_text_field");
+                    initial_open = false;
+                }
+
+                GUILayout.EndHorizontal();
+
+                if (_shouldScrollToBottom)
+                {
+                    _autoScrollFrameCount++;
+                    scroll_position.y = Mathf.Infinity;
+                    if (_autoScrollFrameCount < _maxAutoScrollFrames)
+                    {
+                        _shouldScrollToBottom = false;
+                        _autoScrollFrameCount = 0;
+                    }
+                }
             }
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(TerminalSettings.InputCaret, input_style, GUILayout.Width(TerminalSettings.ConsoleFont.fontSize));
-            GUI.SetNextControlName("command_text_field");
-            command_text = GUILayout.TextField(command_text, input_style);
-
-            if (input_fix && command_text.Length > 0)
-            {
-                command_text = cached_command_text; // Otherwise the TextField picks up the ToggleHotkey character event
-                input_fix = false;                  // Prevents checking string Length every draw call
-            }
-
-            if (initial_open)
-            {
-                GUI.FocusControl("command_text_field");
-                initial_open = false;
-            }
-
-            GUILayout.EndHorizontal();
             GUILayout.EndVertical();
         }
 
@@ -336,6 +356,11 @@ namespace CommandTerminal
         public void LogWarning(string message)
         {
             Log($"[WARN] {message}");
+        }
+
+        public void ToggleCommandInput(bool enable)
+        {
+            _allowCommandInput = enable;
         }
     }
 }

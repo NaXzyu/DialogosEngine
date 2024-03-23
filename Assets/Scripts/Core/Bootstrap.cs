@@ -22,6 +22,7 @@ public class Bootstrap : MonoBehaviour
             Debug.LogError("Unable to find the terminal");
             Utility.Quit();
         }
+        _terminal.ToggleCommandInput(false);
         _terminal.Log("[BOOT] Attempting to load bootstrap file...");
         BootFile = Resources.Load<TextAsset>("bootstrap");
 
@@ -49,12 +50,13 @@ public class Bootstrap : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
         PrintWelcomeMessage();
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(1);
         PrintBootMessage(BootFile);
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(1);
         PostBoot();
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(1);
         if (_clearPostBoot) ClearTerminal();
+        _terminal.ToggleCommandInput(true);
     }
 
     void PrintWelcomeMessage()
