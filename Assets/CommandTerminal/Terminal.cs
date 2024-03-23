@@ -5,18 +5,6 @@ namespace CommandTerminal
 {
     public class Terminal : MonoBehaviour
     {
-        [Header("Window")]
-        [SerializeField][Range(0, 1)] float MaxHeight = 1f;
-        [SerializeField][Range(0, 1)] float SmallTerminalRatio = 0.33f;
-        [SerializeField][Range(1, 100000)] float ToggleSpeed = 1000;
-
-        [Header("Memory")]
-        [SerializeField] int BufferSize = 4096;
-
-        [Header("Theme")]
-        [SerializeField] Font ConsoleFont;
-        [Range(0, 1)][SerializeField] float InputContrast;
-
         TerminalState state;
         TextEditor editor_state;
         bool input_fix;
@@ -33,6 +21,7 @@ namespace CommandTerminal
         GUIStyle label_style;
         GUIStyle input_style;
 
+        public static TerminalSettings TerminalSettings { get; private set; }
         public static CommandLog Buffer { get; private set; }
         public static CommandShell Shell { get; private set; }
         public static CommandHistory History { get; private set; }
@@ -73,7 +62,7 @@ namespace CommandTerminal
                     }
                 case TerminalState.OpenSmall:
                     {
-                        open_target = Screen.height * MaxHeight * SmallTerminalRatio;
+                        open_target = Screen.height * TerminalSettings.MaxHeight * TerminalSettings.SmallTerminalRatio;
                         if (current_open_t > open_target)
                         {
                             open_target = 0;
@@ -87,7 +76,7 @@ namespace CommandTerminal
                 case TerminalState.OpenFull:
                 default:
                     {
-                        real_window_size = Screen.height * MaxHeight;
+                        real_window_size = Screen.height * TerminalSettings.MaxHeight;
                         open_target = real_window_size;
                         break;
                     }
@@ -115,7 +104,8 @@ namespace CommandTerminal
 
         void Initialize()
         {
-            Buffer = new CommandLog(BufferSize);
+            TerminalSettings = new TerminalSettings();
+            Buffer = new CommandLog(TerminalSettings.BufferSize);
             Shell = new CommandShell();
             History = new CommandHistory();
             Autocomplete = new CommandAutocomplete();
@@ -123,9 +113,9 @@ namespace CommandTerminal
 
         void Start()
         {
-            if (ConsoleFont == null)
+            if (TerminalSettings.ConsoleFont == null)
             {
-                ConsoleFont = Font.CreateDynamicFontFromOSFont("Courier New", 16);
+                TerminalSettings.ConsoleFont = Font.CreateDynamicFontFromOSFont("Courier New", 16);
                 Debug.LogWarning("Command Console Warning: Please assign a font.");
             }
 
@@ -166,25 +156,25 @@ namespace CommandTerminal
 
         void SetupWindow()
         {
-            real_window_size = Screen.height * MaxHeight / 3;
+            real_window_size = Screen.height * TerminalSettings.MaxHeight / 3;
             window = new Rect(0, current_open_t - real_window_size, Screen.width, real_window_size);
 
             Texture2D background_texture = new Texture2D(1, 1);
-            background_texture.SetPixel(0, 0, TerminalUtils.BackgroundColor);
+            background_texture.SetPixel(0, 0, TerminalSettings.BackgroundColor);
             background_texture.Apply();
 
             window_style = new GUIStyle();
             window_style.normal.background = background_texture;
             window_style.padding = new RectOffset(4, 4, 4, 4);
-            window_style.normal.textColor = TerminalUtils.ForegroundColor;
-            window_style.font = ConsoleFont;
+            window_style.normal.textColor = TerminalSettings.ForegroundColor;
+            window_style.font = TerminalSettings.ConsoleFont;
         }
 
         void SetupLabels()
         {
             label_style = new GUIStyle();
-            label_style.font = ConsoleFont;
-            label_style.normal.textColor = TerminalUtils.ForegroundColor;
+            label_style.font = TerminalSettings.ConsoleFont;
+            label_style.normal.textColor = TerminalSettings.ForegroundColor;
             label_style.wordWrap = true;
         }
 
@@ -192,14 +182,14 @@ namespace CommandTerminal
         {
             input_style = new GUIStyle();
             input_style.padding = new RectOffset(4, 4, 4, 4);
-            input_style.font = ConsoleFont;
-            input_style.fixedHeight = ConsoleFont.fontSize * 1.6f;
-            input_style.normal.textColor = TerminalUtils.InputColor;
+            input_style.font = TerminalSettings.ConsoleFont;
+            input_style.fixedHeight = TerminalSettings.ConsoleFont.fontSize * 1.6f;
+            input_style.normal.textColor = TerminalSettings.InputColor;
 
             var dark_background = new Color();
-            dark_background.r = TerminalUtils.BackgroundColor.r - InputContrast;
-            dark_background.g = TerminalUtils.BackgroundColor.g - InputContrast;
-            dark_background.b = TerminalUtils.BackgroundColor.b - InputContrast;
+            dark_background.r = TerminalSettings.BackgroundColor.r - TerminalSettings.InputContrast;
+            dark_background.g = TerminalSettings.BackgroundColor.g - TerminalSettings.InputContrast;
+            dark_background.b = TerminalSettings.BackgroundColor.b - TerminalSettings.InputContrast;
             dark_background.a = 0.5f;
 
             Texture2D input_background_texture = new Texture2D(1, 1);
@@ -242,7 +232,7 @@ namespace CommandTerminal
             }
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(TerminalUtils.InputCaret, input_style, GUILayout.Width(ConsoleFont.fontSize));
+            GUILayout.Label(TerminalSettings.InputCaret, input_style, GUILayout.Width(TerminalSettings.ConsoleFont.fontSize));
             GUI.SetNextControlName("command_text_field");
             command_text = GUILayout.TextField(command_text, input_style);
 
@@ -266,14 +256,14 @@ namespace CommandTerminal
         {
             foreach (var log in Buffer.Logs)
             {
-                label_style.normal.textColor = TerminalUtils.GetLogColor(log.type);
+                label_style.normal.textColor = TerminalUtils.GetLogColor(TerminalSettings, log.type);
                 GUILayout.Label(log.message, label_style);
             }
         }
 
         void HandleOpenness()
         {
-            float dt = ToggleSpeed * Time.deltaTime;
+            float dt = TerminalSettings.ToggleSpeed * Time.deltaTime;
 
             if (current_open_t < open_target)
             {
