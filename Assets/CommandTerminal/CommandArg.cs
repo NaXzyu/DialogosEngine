@@ -2,7 +2,19 @@ namespace CommandTerminal
 {
     public struct CommandArg
     {
-        public string String { get; set; }
+        private string _value;
+
+        public string Value
+        {
+            get { return _value; }
+            set { _value = value; }
+        }
+
+        public string String
+        {
+            get { return _value; }
+            set { _value = value; }
+        }
 
         public int Int
         {

@@ -75,7 +75,7 @@ public class ScriptInterpreter : MonoBehaviour
     {
         bool _commandCompleted = false;
 
-        Terminal.Instance.Shell.RunCommand(command);
+        Terminal.Instance.Shell.Run(command);
         yield return new WaitForSeconds(5); // Simulate command execution time
         _commandCompleted = true;
 

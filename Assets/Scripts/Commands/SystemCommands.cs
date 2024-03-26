@@ -1,46 +1,55 @@
-using CommandTerminal;
-using System.Linq;
-using System.Reflection;
-using UnityEngine;
+using DialogosEngine;
 
 namespace CommandTerminal
 {
     public static class SystemCommands
     {
         [Command("register")]
-        public static void RegisterProcedure(CommandArg[] args)
+        public static void RegisterCommand(CommandArg[] args)
         {
-            var name = args[0].String;
-            var minArgs = args[1].Int;
-            var maxArgs = args[2].Int;
-            var helpText = args[3].String;
-
-            if (Terminal.Instance != null)
+            if (args.Length >= 3)
             {
-                if (Terminal.Instance.TerminalCommands.CommandMethods.ContainsKey(name))
+                var _name = args[0].String;
+                var _minArgs = args[1].Int;
+                var _maxArgs = args[2].Int;
+                var _helpText = args[3].String;
+
+                if (Terminal.Instance != null)
                 {
-                    Terminal.Instance.TerminalCommands.RegisterCommand(name, minArgs, maxArgs, helpText);
-                    return;
+                    CommandData _commandData = new CommandData
+                    {
+                        Name = _name,
+                        MinArgs = _minArgs,
+                        MaxArgs = _maxArgs,
+                        HelpText = _helpText
+                    };
+
+                    Terminal.Instance.TerminalCommands.Register(_commandData);
                 }
-            }
-            Terminal.Instance.LogError("The Terminal is null.");
-            Utility.Quit();
-        }
-
-
-
-        [Command("unregister")]
-        public static void UnregisterProcedure(CommandArg[] args)
-        {
-            if (Terminal.Instance != null)
-            {
-                Terminal.Instance.TerminalCommands.UnregisterCommand(args[0].String);
+                else
+                {
+                    Terminal.Instance.LogError("The Terminal is null.");
+                    Utility.Quit(3);
+                }
             }
             else
             {
-                Terminal.Instance.LogError("Unable to local the terminal in TerminalCommand.");
+                Terminal.Instance.LogError("Insufficient arguments provided for 'register' command.");
             }
         }
 
+
+        [Command("unregister")]
+        public static void UnregisterCommand(CommandArg[] args)
+        {
+            if (Terminal.Instance != null)
+            {
+                Terminal.Instance.TerminalCommands.Unregister(args[0].String);
+            }
+            else
+            {
+                Terminal.Instance.LogError("Unable to locate the terminal in TerminalCommand.");
+            }
+        }
     }
 }

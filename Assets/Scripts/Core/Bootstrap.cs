@@ -2,6 +2,7 @@ using UnityEngine;
 using CommandTerminal;
 using System.Collections;
 using System;
+using DialogosEngine;
 
 public class Bootstrap : MonoBehaviour
 {
@@ -25,7 +26,7 @@ public class Bootstrap : MonoBehaviour
         if (Terminal.Instance == null)
         {
             Debug.LogError("Unable to find the terminal");
-            Utility.Quit();
+            Utility.Quit(3);
         }
         Terminal.Instance.ToggleCommandInput(false);
     }
@@ -52,7 +53,7 @@ public class Bootstrap : MonoBehaviour
         Terminal.Instance.Log("[BOOT] Waiting 3 seconds before quitting...");
         yield return new WaitForSeconds(3);
         Terminal.Instance.Log("[BOOT] Quitting application");
-        Utility.Quit();
+        Utility.Quit(3);
     }
 
     IEnumerator BootSequence()
@@ -69,10 +70,10 @@ public class Bootstrap : MonoBehaviour
 
     private void PrintWelcomeMessage()
     {
-        TextAsset welcomeMessageAsset = Resources.Load<TextAsset>(k_Welcome);
-        if (welcomeMessageAsset != null)
+        TextAsset _welcome = Resources.Load<TextAsset>(k_Welcome);
+        if (_welcome != null)
         {
-            PrintLinesFromAsset(welcomeMessageAsset, "[BOOT] ");
+            PrintLinesFromTextAsset(_welcome, "[BOOT] ");
         }
         else
         {
@@ -80,21 +81,21 @@ public class Bootstrap : MonoBehaviour
         }
     }
 
-    private void RunBoot(TextAsset bootstrapFile)
+    private void RunBoot(TextAsset bootstrap)
     {
-        Terminal.Instance.TerminalCommands.Initialize(bootstrapFile);
+        Terminal.Instance.TerminalCommands.Initialize(bootstrap);
         Terminal.Instance.Log("[BOOT] Sequence COMPLETE!");
     }
 
-    private void PrintLinesFromAsset(TextAsset asset, string prefix)
+    private void PrintLinesFromTextAsset(TextAsset asset, string prefix)
     {
-        string[] lines = asset.text.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries);
+        string[] _lines = asset.text.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries);
         Terminal.Instance.Buffer.Clear();
-        foreach (string line in lines)
+        foreach (string _line in _lines)
         {
-            if (!line.Trim().StartsWith("#") && !string.IsNullOrWhiteSpace(line))
+            if (!_line.Trim().StartsWith("#") && !string.IsNullOrWhiteSpace(_line))
             {
-                Terminal.Instance.Log(prefix + line);
+                Terminal.Instance.Log(prefix + _line);
             }
         }
     }
@@ -107,10 +108,10 @@ public class Bootstrap : MonoBehaviour
 
     private void PostBoot()
     {
-        ScriptInterpreter scriptInterpreter = ScriptInterpreter.CreateInstance(k_Interpreter);
-        if (scriptInterpreter != null)
+        ScriptInterpreter _interpreter = ScriptInterpreter.CreateInstance(k_Interpreter);
+        if (_interpreter != null)
         {
-            scriptInterpreter.InitializeAndExecuteScript(k_PostBoot);
+            _interpreter.InitializeAndExecuteScript(k_PostBoot);
             Terminal.Instance.Log("[BOOT] ScriptInterpreter: Verification successful");
         }
         else

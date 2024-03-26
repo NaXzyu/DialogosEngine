@@ -11,9 +11,17 @@ namespace CommandTerminal
         public static void HelpProcedure(CommandArg[] args)
         {
             var terminal = Terminal.Instance;
-            var name = args[0].String;
-            
-            // TODO Display the help system wide for Dialogos -- maybe iterate through all register commands in the terminal 
+            if (args.Length > 0)
+            {
+                var name = args[0].String;
+                // TODO: Implement help display for specific command
+                terminal.Log($"TODO display help for {0}", name);
+            }
+            else
+            {
+                // TODO: Implement system-wide help display
+                terminal.Log("TODO display general help");
+            }
         }
     }
 }

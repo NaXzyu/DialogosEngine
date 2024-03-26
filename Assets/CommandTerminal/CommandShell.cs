@@ -6,17 +6,17 @@ namespace CommandTerminal
 {
     public class CommandShell
     {
-        Dictionary<string, CommandInfo> commands = new Dictionary<string, CommandInfo>();
+        Dictionary<string, CommandData> commands = new Dictionary<string, CommandData>();
         List<CommandArg> arguments = new List<CommandArg>();
 
         public string IssuedErrorMessage { get; private set; }
 
-        public Dictionary<string, CommandInfo> Commands
+        public Dictionary<string, CommandData> Commands
         {
             get { return commands; }
         }
 
-        public void RunCommand(string line)
+        public void Run(string line)
         {
             string remaining = line;
             IssuedErrorMessage = null;
@@ -46,58 +46,50 @@ namespace CommandTerminal
                 return;
             }
 
-            RunCommand(command_name, arguments.ToArray());
+            Run(command_name, arguments.ToArray());
         }
 
-        public void RunCommand(string command_name, CommandArg[] arguments)
+        public void Run(string commandName, CommandArg[] arguments)
         {
-            var command = commands[command_name];
-            int arg_count = arguments.Length;
-            string error_message = null;
-            int required_arg = 0;
-
-            if (arg_count < command.min_arg_count)
+            if (commands.TryGetValue(commandName, out CommandData _command))
             {
-                if (command.min_arg_count == command.max_arg_count)
-                {
-                    error_message = "exactly";
-                }
-                else
-                {
-                    error_message = "at least";
-                }
-                required_arg = command.min_arg_count;
-            }
-            else if (command.max_arg_count > -1 && arg_count > command.max_arg_count)
-            {
-                if (command.min_arg_count == command.max_arg_count)
-                {
-                    error_message = "exactly";
-                }
-                else
-                {
-                    error_message = "at most";
-                }
-                required_arg = command.max_arg_count;
-            }
+                int _argCount = arguments.Length;
+                string _errorMsg = null;
+                int _requiredArg = 0;
 
-            if (error_message != null)
-            {
-                string plural_fix = required_arg == 1 ? "" : "s";
-                IssueErrorMessage(
-                    "{0} requires {1} {2} argument{3}",
-                    command_name,
-                    error_message,
-                    required_arg,
-                    plural_fix
-                );
-                return;
-            }
+                if (_argCount < _command.MinArgs)
+                {
+                    _errorMsg = _command.MinArgs == _command.MaxArgs ? "exactly" : "at least";
+                    _requiredArg = _command.MinArgs;
+                }
+                else if (_command.MaxArgs > -1 && _argCount > _command.MaxArgs)
+                {
+                    _errorMsg = _command.MinArgs == _command.MaxArgs ? "exactly" : "at most";
+                    _requiredArg = _command.MaxArgs;
+                }
 
-            command.command(arguments);
+                if (_errorMsg != null)
+                {
+                    string _pluralFix = _requiredArg == 1 ? "" : "s";
+                    IssueErrorMessage(
+                        "{0} requires {1} {2} argument{3}",
+                        commandName,
+                        _errorMsg,
+                        _requiredArg,
+                        _pluralFix
+                    );
+                    return;
+                }
+
+                _command.Action(arguments);
+            }
+            else
+            {
+                Terminal.Instance.LogError($"Command not found: {commandName}");
+            }
         }
 
-        public void AddCommand(string name, CommandInfo info)
+        public void AddCommand(string name, CommandData data)
         {
             name = name.ToUpper();
 
@@ -107,7 +99,7 @@ namespace CommandTerminal
                 return;
             }
 
-            commands.Add(name, info);
+            commands.Add(name, data);
         }
 
         public void IssueErrorMessage(string format, params object[] message)

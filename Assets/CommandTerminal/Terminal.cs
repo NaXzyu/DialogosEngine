@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using DialogosEngine;
 
 namespace CommandTerminal
 {
@@ -30,7 +31,7 @@ namespace CommandTerminal
         const string k_FontPath = "fonts/F25_Bank_Printer";
 
         public TerminalSettings TerminalSettings { get; private set; }
-        public TerminalCommand TerminalCommands { get; private set; }
+        public Commands TerminalCommands { get; private set; }
         public CommandLog Buffer { get; private set; }
         public CommandShell Shell { get; private set; }
         public CommandHistory History { get; private set; }
@@ -45,7 +46,7 @@ namespace CommandTerminal
         void Initialize()
         {
             TerminalSettings = new TerminalSettings();
-            TerminalCommands = new TerminalCommand();
+            TerminalCommands = new Commands();
             Buffer = new CommandLog(TerminalSettings.BufferSize);
             Shell = new CommandShell();
             History = new CommandHistory();
@@ -60,7 +61,7 @@ namespace CommandTerminal
                 if (TerminalSettings.ConsoleFont == null)
                 {
                     Debug.LogError($"The font '{k_FontPath}' could not be loaded.");
-                    Utility.Quit();
+                    Utility.Quit(3);
                 }
             }
 
@@ -272,7 +273,7 @@ namespace CommandTerminal
         void EnterCommand()
         {
             Log(TerminalLogType.Input, "{0}", command_text);
-            Shell.RunCommand(command_text);
+            Shell.Run(command_text);
             History.Push(command_text);
 
             if (IssuedError)

@@ -1,15 +1,19 @@
+using System.Diagnostics;
 using System.Threading.Tasks;
 
-public static class Utility
+namespace DialogosEngine
 {
-    public static async void Quit()
+    public static class Utility
     {
-        await Task.Delay(5000); // Wait for 5 seconds
+        public static async void Quit(int waitTime)
+        {
+            await Task.Delay(waitTime);
 
 #if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
+            UnityEditor.EditorApplication.isPlaying = false;
 #else
         Application.Quit();
 #endif
+        }
     }
 }
