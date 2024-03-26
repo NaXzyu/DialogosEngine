@@ -14,7 +14,7 @@ namespace CommandTerminal
                 Terminal.Instance.Log("[BULD] Starting build process...");
                 bool hasCompileErrors = false;
 
-                //Processor.ExecuteBatchFile("/Resources/Bin/Build.bat");
+                Processor.ExecuteBatchFile("/Resources/Bin/Build.bat");
 
                 if (hasCompileErrors)
                 {

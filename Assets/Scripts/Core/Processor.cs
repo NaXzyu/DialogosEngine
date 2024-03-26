@@ -1,36 +1,47 @@
 using UnityEngine;
 using System.Diagnostics;
 using System.Threading;
-using CommandTerminal;
 
 namespace DialogosEngine
 {
     public class Processor
     {
+        public static int k_MaxProcessors = 16;
+        private static SemaphoreSlim _Semaphore = new SemaphoreSlim(k_MaxProcessors, k_MaxProcessors);
+
         public static void ExecuteBatchFile(string batchFile)
         {
-            Thread _batchThread = new Thread(() =>
+            Thread _thread = new Thread(() =>
             {
-                Process _process = new Process();
-                string _filePath = Application.dataPath + batchFile;
-                _process.StartInfo.FileName = _filePath;
-                _process.StartInfo.UseShellExecute = false;
-                _process.StartInfo.RedirectStandardOutput = true;
-                _process.StartInfo.RedirectStandardError = true;
-                _process.Start();
-                while (!_process.StandardOutput.EndOfStream)
+                _Semaphore.Wait();
+                try
                 {
-                    string _line = _process.StandardOutput.ReadLine();
-                    Terminal.Instance.Log("[PROC] " + _line);
+                    Process _process = new Process();
+                    string _path = Application.dataPath + batchFile;
+                    _process.StartInfo.FileName = _path;
+                    _process.StartInfo.UseShellExecute = false;
+                    _process.StartInfo.RedirectStandardOutput = true;
+                    _process.StartInfo.RedirectStandardError = true;
+                    _process.Start();
+
+                    while (!_process.StandardOutput.EndOfStream)
+                    {
+                        string _line = _process.StandardOutput.ReadLine();
+                        UnityEngine.Debug.Log(_line);
+                    }
+                    if (!_process.StandardError.EndOfStream)
+                    {
+                        string _error = _process.StandardError.ReadToEnd();
+                        UnityEngine.Debug.LogError(_error);
+                    }
+                    _process.WaitForExit();
                 }
-                if (!_process.StandardError.EndOfStream)
+                finally
                 {
-                    string _error = _process.StandardError.ReadToEnd();
-                    Terminal.Instance.LogError("[PROC] " + _error);
+                    _Semaphore.Release();
                 }
-                _process.WaitForExit();
             });
-            _batchThread.Start();
+            _thread.Start();
         }
     }
 }
