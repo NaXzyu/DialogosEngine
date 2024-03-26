@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,14 +9,14 @@ namespace CommandTerminal
     {
         public static Color GetLogColor(CommandSettings settings, LogType type)
         {
-            switch (type)
+            return type switch
             {
-                case LogType.Message: return settings.ForegroundColor;
-                case LogType.Warning: return settings.WarningColor;
-                case LogType.Input: return settings.InputColor;
-                case LogType.ShellMessage: return settings.ShellColor;
-                default: return settings.ErrorColor;
-            }
+                LogType.Message => settings.ForegroundColor,
+                LogType.Warning => settings.WarningColor,
+                LogType.Input => settings.InputColor,
+                LogType.ShellMessage => settings.ShellColor,
+                _ => settings.ErrorColor,
+            };
         }
 
         public static Dictionary<string, MethodInfo> CacheCommandMethods()

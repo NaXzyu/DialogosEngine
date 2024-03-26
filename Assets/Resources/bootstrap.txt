@@ -9,3 +9,6 @@ Register { Unregister, 1, 1, "Unregisters an existing command from the terminal.
 
 # Help Command
 Register { Help, 0, -1, "Displays help information for all commands."}
+
+# New Command
+Register { Build, 0, -1, "Performs a Build using local Unity installation."}

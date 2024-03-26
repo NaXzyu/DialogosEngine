@@ -1,7 +1,3 @@
-using CommandTerminal;
-using System.Linq;
-using UnityEngine;
-
 namespace CommandTerminal
 {
     public static class HelpCommands
