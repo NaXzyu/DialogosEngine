@@ -28,98 +28,11 @@ namespace CommandTerminal
         const string k_FontPath = "fonts/F25_Bank_Printer";
 
         public TerminalSettings TerminalSettings { get; private set; }
+        public TerminalCommand TerminalCommands { get; private set; }
         public CommandLog Buffer { get; private set; }
         public CommandShell Shell { get; private set; }
         public CommandHistory History { get; private set; }
         public CommandAutocomplete Autocomplete { get; private set; }
-
-        public bool IssuedError
-        {
-            get { return Shell.IssuedErrorMessage != null; }
-        }
-
-        public bool IsClosed
-        {
-            get { return state == TerminalState.Close && Mathf.Approximately(current_open_t, open_target); }
-        }
-
-        public void Log(string format, params object[] message)
-        {
-            Log(TerminalLogType.ShellMessage, format, message);
-        }
-
-        public void Log(TerminalLogType type, string format, params object[] message)
-        {
-            Buffer.HandleLog(string.Format(format, message), type);
-            _shouldScrollToBottom = true;
-        }
-
-        public void SetState(TerminalState new_state)
-        {
-            PrepareForStateChange();
-            HandleStateChange(new_state);
-            state = new_state;
-        }
-
-        private void PrepareForStateChange()
-        {
-            input_fix = true;
-            cached_command_text = command_text;
-            command_text = "";
-        }
-
-        private void HandleStateChange(TerminalState new_state)
-        {
-            switch (new_state)
-            {
-                case TerminalState.Close:
-                    CloseTerminal();
-                    break;
-                case TerminalState.OpenSmall:
-                    OpenTerminalSmall();
-                    break;
-                case TerminalState.OpenFull:
-                default:
-                    OpenTerminalFull();
-                    break;
-            }
-        }
-
-        private void CloseTerminal()
-        {
-            open_target = 0;
-        }
-
-        private void OpenTerminalSmall()
-        {
-            open_target = Screen.height * TerminalSettings.MaxHeight * TerminalSettings.SmallTerminalRatio;
-            if (current_open_t > open_target)
-            {
-                CloseTerminal();
-                return;
-            }
-            real_window_size = open_target;
-            scroll_position.y = int.MaxValue;
-        }
-
-        private void OpenTerminalFull()
-        {
-            real_window_size = Screen.height * TerminalSettings.MaxHeight;
-            open_target = real_window_size;
-        }
-
-
-        public void ToggleState(TerminalState new_state)
-        {
-            if (state == new_state)
-            {
-                SetState(TerminalState.Close);
-            }
-            else
-            {
-                SetState(new_state);
-            }
-        }
 
         void Awake()
         {
@@ -129,6 +42,7 @@ namespace CommandTerminal
         void Initialize()
         {
             TerminalSettings = new TerminalSettings();
+            TerminalCommands = new TerminalCommand();
             Buffer = new CommandLog(TerminalSettings.BufferSize);
             Shell = new CommandShell();
             History = new CommandHistory();
@@ -407,6 +321,95 @@ namespace CommandTerminal
         public void ToggleCommandInput(bool enable)
         {
             _allowCommandInput = enable;
+        }
+
+        public bool IssuedError
+        {
+            get { return Shell.IssuedErrorMessage != null; }
+        }
+
+        public bool IsClosed
+        {
+            get { return state == TerminalState.Close && Mathf.Approximately(current_open_t, open_target); }
+        }
+
+        public void Log(string format, params object[] message)
+        {
+            Log(TerminalLogType.ShellMessage, format, message);
+        }
+
+        public void Log(TerminalLogType type, string message, params object[] args)
+        {
+            string formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
+            Buffer.HandleLog(formattedMessage, type);
+            _shouldScrollToBottom = true;
+        }
+
+        public void SetState(TerminalState new_state)
+        {
+            PrepareForStateChange();
+            HandleStateChange(new_state);
+            state = new_state;
+        }
+
+        private void PrepareForStateChange()
+        {
+            input_fix = true;
+            cached_command_text = command_text;
+            command_text = "";
+        }
+
+        private void HandleStateChange(TerminalState new_state)
+        {
+            switch (new_state)
+            {
+                case TerminalState.Close:
+                    CloseTerminal();
+                    break;
+                case TerminalState.OpenSmall:
+                    OpenTerminalSmall();
+                    break;
+                case TerminalState.OpenFull:
+                default:
+                    OpenTerminalFull();
+                    break;
+            }
+        }
+
+        private void CloseTerminal()
+        {
+            open_target = 0;
+        }
+
+        private void OpenTerminalSmall()
+        {
+            open_target = Screen.height * TerminalSettings.MaxHeight * TerminalSettings.SmallTerminalRatio;
+            if (current_open_t > open_target)
+            {
+                CloseTerminal();
+                return;
+            }
+            real_window_size = open_target;
+            scroll_position.y = int.MaxValue;
+        }
+
+        private void OpenTerminalFull()
+        {
+            real_window_size = Screen.height * TerminalSettings.MaxHeight;
+            open_target = real_window_size;
+        }
+
+
+        public void ToggleState(TerminalState new_state)
+        {
+            if (state == new_state)
+            {
+                SetState(TerminalState.Close);
+            }
+            else
+            {
+                SetState(new_state);
+            }
         }
     }
 }

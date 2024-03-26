@@ -65,16 +65,6 @@ public class SessionManager : MonoBehaviour
         }
     }
 
-    public void RegisterCommand(string commandName)
-    {
-        _terminal.Shell.AddCommand(commandName, args =>
-        {
-            Kernel.Instance.ExecuteCommand(_terminal, commandName);
-        }, 0, 0, $"[SESSION] Executes the {commandName} command.");
-
-        _terminal.Log($"[SESSION] Command '{commandName}' registered.");
-    }
-
     public void LogCommandExecution(string commandName)
     {
         var currentSession = GetCurrentSession();
@@ -85,22 +75,9 @@ public class SessionManager : MonoBehaviour
         }
     }
 
-    public void UnregisterCommand(string commandName)
-    {
-
-        // TODO implement a Terminal.Shell.RemoveCommand(commandName);
-
-        _terminal.Log($"[SESSION] Command '{commandName}' unregistered.");
-    }
-
     public TerminalSession GetCurrentSession()
     {
         return sessions.TryGetValue(currentSessionID, out TerminalSession currentSession) ? currentSession : null;
-    }
-
-    public void ClearAllCommands()
-    {
-        _terminal.Buffer.Clear();
     }
 
     public void SaveSession(int sessionID)

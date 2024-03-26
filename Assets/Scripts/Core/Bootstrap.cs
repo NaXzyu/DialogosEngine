@@ -34,7 +34,7 @@ public class Bootstrap : MonoBehaviour
     private void LoadBootstrapFile()
     {
         _terminal.Log("[BOOT] Attempting to load bootstrap file...");
-        BootFile = Resources.Load<TextAsset>("bootstrap");
+        BootFile = Resources.Load<TextAsset>(k_Bootstrap);
 
         if (BootFile == null)
         {
@@ -61,7 +61,7 @@ public class Bootstrap : MonoBehaviour
         yield return new WaitForSeconds(1);
         PrintWelcomeMessage();
         yield return new WaitForSeconds(1);
-        PrintBootMessage(BootFile);
+        RunBoot(BootFile);
         yield return new WaitForSeconds(1);
         PostBoot();
         yield return new WaitForSeconds(1);
@@ -81,9 +81,9 @@ public class Bootstrap : MonoBehaviour
         }
     }
 
-    private void PrintBootMessage(TextAsset bootFileAsset)
+    private void RunBoot(TextAsset bootstrapFile)
     {
-        PrintLinesFromAsset(bootFileAsset, "");
+        _terminal.TerminalCommands.Initialize(_terminal, bootstrapFile);
         _terminal.Log("[BOOT] Sequence COMPLETE!");
     }
 

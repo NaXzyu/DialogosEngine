@@ -4,76 +4,10 @@ using System.Collections.Generic;
 
 namespace CommandTerminal
 {
-    public struct CommandInfo
-    {
-        public Action<CommandArg[]> proc;
-        public int max_arg_count;
-        public int min_arg_count;
-        public string help;
-    }
-
-    public struct CommandArg
-    {
-        public string String { get; set; }
-
-        public int Int
-        {
-            get
-            {
-                int int_value;
-
-                if (int.TryParse(String, out int_value))
-                {
-                    return int_value;
-                }
-
-                return 0;
-            }
-        }
-
-        public float Float
-        {
-            get
-            {
-                float float_value;
-
-                if (float.TryParse(String, out float_value))
-                {
-                    return float_value;
-                }
-
-                return 0;
-            }
-        }
-
-        public bool Bool
-        {
-            get
-            {
-                if (string.Compare(String, "TRUE", ignoreCase: true) == 0)
-                {
-                    return true;
-                }
-
-                if (string.Compare(String, "FALSE", ignoreCase: true) == 0)
-                {
-                    return false;
-                }
-
-                return false;
-            }
-        }
-
-        public override string ToString()
-        {
-            return String;
-        }
-    }
-
     public class CommandShell
     {
         Dictionary<string, CommandInfo> commands = new Dictionary<string, CommandInfo>();
-        List<CommandArg> arguments = new List<CommandArg>(); // Cache for performance
+        List<CommandArg> arguments = new List<CommandArg>();
 
         public string IssuedErrorMessage { get; private set; }
 
@@ -90,7 +24,7 @@ namespace CommandTerminal
 
             while (remaining != "")
             {
-                var argument = EatArgument(ref remaining);
+                var argument = TerminalUtils.EatArgument(ref remaining);
 
                 if (argument.String != "")
                 {
@@ -160,7 +94,7 @@ namespace CommandTerminal
                 return;
             }
 
-            command.proc(arguments);
+            command.procedure(arguments);
         }
 
         public void AddCommand(string name, CommandInfo info)
@@ -176,45 +110,23 @@ namespace CommandTerminal
             commands.Add(name, info);
         }
 
-        public void AddCommand(string name,
-                               Action<CommandArg[]> proc,
-                               int min_arg_count = 0,
-                               int max_arg_count = -1,
-                               string help = "")
-        {
-            var info = new CommandInfo()
-            {
-                proc = proc,
-                min_arg_count = min_arg_count,
-                max_arg_count = max_arg_count,
-                help = help
-            };
-
-            AddCommand(name, info);
-        }
-
         public void IssueErrorMessage(string format, params object[] message)
         {
             IssuedErrorMessage = string.Format(format, message);
         }
 
-        CommandArg EatArgument(ref string s)
+        public void Unregister(string commandKey)
         {
-            var arg = new CommandArg();
-            int space_index = s.IndexOf(' ');
+            commandKey = commandKey.ToUpper();
 
-            if (space_index >= 0)
+            if (commands.ContainsKey(commandKey))
             {
-                arg.String = s.Substring(0, space_index);
-                s = s.Substring(space_index + 1); // Remaining
+                commands.Remove(commandKey);
             }
             else
             {
-                arg.String = s;
-                s = "";
+                IssueErrorMessage("Unregistered Command {0} could not be found.", commandKey);
             }
-
-            return arg;
         }
     }
 }
