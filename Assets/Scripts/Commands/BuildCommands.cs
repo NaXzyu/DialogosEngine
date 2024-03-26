@@ -11,19 +11,19 @@ namespace CommandTerminal
         {
             if (args.Length == k_ExpectedArgs)
             {
-                Terminal.Instance.Log("[BILD] Starting build process...");
+                Terminal.Instance.Log("[BULD] Starting build process...");
                 bool hasCompileErrors = false;
 
-                Processor.ExecuteBatchFile("/Resources/Bin/Build.bat");
+                //Processor.ExecuteBatchFile("/Resources/Bin/Build.bat");
 
                 if (hasCompileErrors)
                 {
-                    Terminal.Instance.LogError("[BILD] Build failed due to compile errors.");
+                    Terminal.Instance.LogError("[BULD] Build failed due to compile errors.");
                 }
             }
             else
             {
-                Terminal.Instance.LogError($"[BILD] Incorrect number of arguments. Expected: {k_ExpectedArgs}");
+                Terminal.Instance.LogError($"[BULD] Incorrect number of arguments. Expected: {k_ExpectedArgs}");
             }
         }
     }
