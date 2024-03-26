@@ -12,9 +12,9 @@ namespace CommandTerminal
             try
             {
                 string[] parts = line.Split(new[] { '{', '}' }, StringSplitOptions.RemoveEmptyEntries);
-                string commandName = parts[0].Trim();
+                string commandName = parts[0].Trim().ToUpper();
                 string[] details = parts[1].Trim().Split(',');
-                string procedureName = details[1].Trim();
+                string procedureName = details[1].Trim().ToUpper();
                 int minArgs = int.Parse(details[2].Trim());
                 int maxArgs = int.Parse(details[3].Trim());
                 string helpText = details[4].Trim();

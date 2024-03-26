@@ -7,8 +7,7 @@ using System.Collections.Generic;
 public class TerminalCommand
 {
     public Dictionary<string, MethodInfo> CommandMethods;
-    public const string k_RegisterCommand = "Register";
-    public const string k_RegisterProcedure = "RegisterProcedure";
+    public const string k_RegisterCommand = "REGISTER";
 
     public TerminalCommand()
     {
@@ -36,8 +35,8 @@ public class TerminalCommand
                     Utility.Quit();
                 }
 
-                if (commandData.Value.CommandName == k_RegisterCommand &&
-                    commandData.Value.ProcedureName == k_RegisterProcedure)
+                if (commandData.Value.CommandName.ToUpper() == k_RegisterCommand &&
+                    commandData.Value.ProcedureName.ToUpper() == k_RegisterCommand)
                 {
                     CommandInfo? commandInfo = CommandUtils.InferCommandInfo(commandData, CommandMethods);
                     RegisterCommand(commandInfo.Value.command.Method.Name, commandInfo.Value.min_arg_count, commandInfo.Value.max_arg_count, commandInfo.Value.help);
