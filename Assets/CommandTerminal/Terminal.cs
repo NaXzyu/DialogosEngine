@@ -1,7 +1,5 @@
-using System;
 using UnityEngine;
 using DialogosEngine;
-using UnityEditor.PackageManager;
 
 namespace CommandTerminal
 {

@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace DialogosEngine
 {
@@ -8,7 +8,6 @@ namespace DialogosEngine
         public static async void Quit(int waitTime)
         {
             await Task.Delay(waitTime);
-
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else
