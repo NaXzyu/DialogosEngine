@@ -6,16 +6,16 @@ using UnityEngine;
 
 namespace CommandTerminal
 {
-    public static class TerminalUtils
+    public static class CommandUtils
     {
-        public static Color GetLogColor(CommandSettings settings, TerminalLogType type)
+        public static Color GetLogColor(CommandSettings settings, LogType type)
         {
             switch (type)
             {
-                case TerminalLogType.Message: return settings.ForegroundColor;
-                case TerminalLogType.Warning: return settings.WarningColor;
-                case TerminalLogType.Input: return settings.InputColor;
-                case TerminalLogType.ShellMessage: return settings.ShellColor;
+                case LogType.Message: return settings.ForegroundColor;
+                case LogType.Warning: return settings.WarningColor;
+                case LogType.Input: return settings.InputColor;
+                case LogType.ShellMessage: return settings.ShellColor;
                 default: return settings.ErrorColor;
             }
         }

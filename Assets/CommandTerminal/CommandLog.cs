@@ -3,57 +3,64 @@ using UnityEngine;
 
 namespace CommandTerminal
 {
-    public enum TerminalLogType
+    public enum LogType
     {
-        Error     = LogType.Error,
-        Assert    = LogType.Assert,
-        Warning   = LogType.Warning,
-        Message   = LogType.Log,
-        Exception = LogType.Exception,
+        Error = UnityEngine.LogType.Error,
+        Assert = UnityEngine.LogType.Assert,
+        Warning = UnityEngine.LogType.Warning,
+        Message = UnityEngine.LogType.Log,
+        Exception = UnityEngine.LogType.Exception,
         Input,
         ShellMessage
     }
 
     public struct LogItem
     {
-        public TerminalLogType type;
-        public string message;
-        public string stack_trace;
+        public LogType Type;
+        public string Message;
+        public string StackTrace;
     }
 
     public class CommandLog
     {
-        List<LogItem> logs = new List<LogItem>();
-        int max_items;
+        List<LogItem> _Logs = new();
+        int _MaxItems;
 
-        public List<LogItem> Logs {
-            get { return logs; }
+        public List<LogItem> Logs
+        {
+            get { return _Logs; }
         }
 
-        public CommandLog(int max_items) {
-            this.max_items = max_items;
+        public CommandLog(int maxItems)
+        {
+            _MaxItems = maxItems;
         }
 
-        public void HandleLog(string message, TerminalLogType type) {
-            HandleLog(message, "", type);
+        public void Handle(string message, LogType type)
+        {
+            Handle(message, "", type);
         }
 
-        public void HandleLog(string message, string stack_trace, TerminalLogType type) {
-            LogItem log = new LogItem() {
-                message = message,
-                stack_trace = stack_trace,
-                type = type
+        public void Handle(string message, string stackTrace, LogType type)
+        {
+            LogItem _log = new()
+            {
+                Message = message,
+                StackTrace = stackTrace,
+                Type = type
             };
 
-            logs.Add(log);
+            _Logs.Add(_log);
 
-            if (logs.Count > max_items) {
-                logs.RemoveAt(0);
+            if (_Logs.Count > _MaxItems)
+            {
+                _Logs.RemoveAt(0);
             }
         }
 
-        public void Clear() {
-            logs.Clear();
+        public void Clear()
+        {
+            _Logs.Clear();
         }
     }
 }

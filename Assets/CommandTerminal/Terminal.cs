@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using DialogosEngine;
+using UnityEditor.PackageManager;
 
 namespace CommandTerminal
 {
@@ -8,25 +9,18 @@ namespace CommandTerminal
     {
         public static Terminal Instance;
 
-        TerminalState state;
-        TextEditor editor_state;
-        bool input_fix;
-        bool move_cursor;
-        bool initial_open;
-        Rect window;
-        float current_open_t;
-        float open_target;
-        float real_window_size;
-        string command_text;
-        string cached_command_text;
-        Vector2 scroll_position;
-        GUIStyle window_style;
-        GUIStyle label_style;
-        GUIStyle input_style;
-        bool _allowCommandInput = true;
+        public CommandState State;
+        public bool InputFix;
+        public bool MoveCursor;
+
+        bool _initialOpen;
+        GUIStyle _labelStyle;
+        GUIStyle _inputStyle;
+        bool _allowInput = true;
         bool _shouldScrollToBottom = false;
         int _autoScrollFrameCount = 0;
         int _maxAutoScrollFrames = 5;
+
         const string k_CommandTextInput = "command_text_field";
         const string k_FontPath = "fonts/F25_Bank_Printer";
 
@@ -36,6 +30,9 @@ namespace CommandTerminal
         public CommandShell Shell { get; private set; }
         public CommandHistory History { get; private set; }
         public CommandAutocomplete Autocomplete { get; private set; }
+        public CommandStates States { get; private set; }
+        public CommandEvents Events { get; private set; }
+        public CommandGUI GUI { get; private set; }
 
         void Awake()
         {
@@ -51,6 +48,9 @@ namespace CommandTerminal
             Shell = new CommandShell();
             History = new CommandHistory();
             Autocomplete = new CommandAutocomplete();
+            States = new CommandStates();
+            Events = new CommandEvents();
+            GUI = new CommandGUI();
         }
 
         void Start()
@@ -60,87 +60,68 @@ namespace CommandTerminal
                 Settings.ConsoleFont = Resources.Load(k_FontPath, typeof(Font)) as Font;
                 if (Settings.ConsoleFont == null)
                 {
-                    Debug.LogError($"The font '{k_FontPath}' could not be loaded.");
+                    Log(LogType.Error, "[EROR] The font {0} could not be loaded.", k_FontPath);
                     Utility.Quit(3);
                 }
             }
 
+            States.CommandText = "";
+            States.CachedCommandText = States.CommandText;
 
-            command_text = "";
-            cached_command_text = command_text;
-
-            SetupWindow();
+            GUI.SetupWindow(this);
             SetupInput();
             SetupLabels();
 
             if (IssuedError)
             {
-                Log(TerminalLogType.Error, "Error: {0}", Shell.IssuedErrorMessage);
+                Log(LogType.Error, "[EROR] {0}", Shell.IssuedErrorMessage);
             }
 
-            foreach (var command in Shell.Commands)
+            foreach (var _command in Shell.Commands)
             {
-                Autocomplete.Register(command.Key);
+                Autocomplete.Register(_command.Key);
             }
 
-            SetState(TerminalState.OpenFull);
-            initial_open = true;
+            States.SetState(this, CommandState.OpenFull);
+            _initialOpen = true;
         }
 
         void OnGUI()
         {
-
             if (IsClosed)
             {
                 return;
             }
-
-            HandleOpenness();
-            window = GUILayout.Window(88, window, DrawConsole, "", window_style);
-        }
-
-        void SetupWindow()
-        {
-            real_window_size = Screen.height * Settings.MaxHeight / 3;
-            window = new Rect(0, current_open_t - real_window_size, Screen.width, real_window_size);
-
-            Texture2D background_texture = new Texture2D(1, 1);
-            background_texture.SetPixel(0, 0, Settings.BackgroundColor);
-            background_texture.Apply();
-
-            window_style = new GUIStyle();
-            window_style.normal.background = background_texture;
-            window_style.padding = new RectOffset(4, 4, 4, 4);
-            window_style.normal.textColor = Settings.ForegroundColor;
-            window_style.font = Settings.ConsoleFont;
+            GUI.HandleOpenness(this);
+            GUI.Window = GUILayout.Window(88, GUI.Window, DrawConsole, "", GUI.WindowStyle);
         }
 
         void SetupLabels()
         {
-            label_style = new GUIStyle();
-            label_style.font = Settings.ConsoleFont;
-            label_style.normal.textColor = Settings.ForegroundColor;
-            label_style.wordWrap = true;
+            _labelStyle = new GUIStyle();
+            _labelStyle.font = Settings.ConsoleFont;
+            _labelStyle.normal.textColor = Settings.ForegroundColor;
+            _labelStyle.wordWrap = true;
         }
 
         void SetupInput()
         {
-            input_style = new GUIStyle();
-            input_style.padding = new RectOffset(4, 4, 4, 4);
-            input_style.font = Settings.ConsoleFont;
-            input_style.fixedHeight = Settings.ConsoleFont.fontSize * 1.6f;
-            input_style.normal.textColor = Settings.InputColor;
+            _inputStyle = new GUIStyle();
+            _inputStyle.padding = new RectOffset(4, 4, 4, 4);
+            _inputStyle.font = Settings.ConsoleFont;
+            _inputStyle.fixedHeight = Settings.ConsoleFont.fontSize * 1.6f;
+            _inputStyle.normal.textColor = Settings.InputColor;
 
-            var dark_background = new Color();
-            dark_background.r = Settings.BackgroundColor.r - Settings.InputContrast;
-            dark_background.g = Settings.BackgroundColor.g - Settings.InputContrast;
-            dark_background.b = Settings.BackgroundColor.b - Settings.InputContrast;
-            dark_background.a = 0.5f;
+            var _darkBackground = new Color();
+            _darkBackground.r = Settings.BackgroundColor.r - Settings.InputContrast;
+            _darkBackground.g = Settings.BackgroundColor.g - Settings.InputContrast;
+            _darkBackground.b = Settings.BackgroundColor.b - Settings.InputContrast;
+            _darkBackground.a = 0.5f;
 
-            Texture2D input_background_texture = new Texture2D(1, 1);
-            input_background_texture.SetPixel(0, 0, dark_background);
-            input_background_texture.Apply();
-            input_style.normal.background = input_background_texture;
+            Texture2D _inputBackground = new Texture2D(1, 1);
+            _inputBackground.SetPixel(0, 0, _darkBackground);
+            _inputBackground.Apply();
+            _inputStyle.normal.background = _inputBackground;
         }
 
         void DrawConsole(int Window2D)
@@ -153,7 +134,7 @@ namespace CommandTerminal
 
         void DrawScrollView()
         {
-            scroll_position = GUILayout.BeginScrollView(scroll_position, false, false, GUIStyle.none, GUIStyle.none);
+            GUI.ScrollPosition = GUILayout.BeginScrollView(GUI.ScrollPosition, false, false, GUIStyle.none, GUIStyle.none);
             GUILayout.FlexibleSpace();
             DrawLogs();
             GUILayout.EndScrollView();
@@ -162,46 +143,19 @@ namespace CommandTerminal
 
         void HandleCommandInput()
         {
-            if (_allowCommandInput)
+            if (_allowInput)
             {
-                HandleKeyboardEvents();
+                Events.HandleKeyboardEvents(this);
                 DrawCommandTextField();
-            }
-        }
-
-        void HandleKeyboardEvents()
-        {
-            if (move_cursor)
-            {
-                CursorToEnd();
-                move_cursor = false;
-            }
-            if (Event.current.Equals(Event.KeyboardEvent("return")))
-            {
-                EnterCommand();
-            }
-            else if (Event.current.Equals(Event.KeyboardEvent("up")))
-            {
-                command_text = History.Previous();
-                move_cursor = true;
-            }
-            else if (Event.current.Equals(Event.KeyboardEvent("down")))
-            {
-                command_text = History.Next();
-            }
-            else if (Event.current.Equals(Event.KeyboardEvent("tab")))
-            {
-                CompleteCommand();
-                move_cursor = true; // Wait till next draw call
             }
         }
 
         void DrawCommandTextField()
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Settings.InputCaret, input_style, GUILayout.Width(Settings.ConsoleFont.fontSize));
-            GUI.SetNextControlName(k_CommandTextInput);
-            command_text = GUILayout.TextField(command_text, input_style);
+            GUILayout.Label(Settings.InputCaret, _inputStyle, GUILayout.Width(Settings.ConsoleFont.fontSize));
+            UnityEngine.GUI.SetNextControlName(k_CommandTextInput);
+            States.CommandText = GUILayout.TextField(States.CommandText, _inputStyle);
             CheckInputFix();
             FocusOnInitialOpen();
             GUILayout.EndHorizontal();
@@ -209,19 +163,19 @@ namespace CommandTerminal
 
         void CheckInputFix()
         {
-            if (input_fix && command_text.Length > 0)
+            if (InputFix && States.CommandText.Length > 0)
             {
-                command_text = cached_command_text;
-                input_fix = false;
+                States.CommandText = States.CachedCommandText;
+                InputFix = false;
             }
         }
 
         void FocusOnInitialOpen()
         {
-            if (initial_open)
+            if (_initialOpen)
             {
-                GUI.FocusControl(k_CommandTextInput);
-                initial_open = false;
+                UnityEngine.GUI.FocusControl(k_CommandTextInput);
+                _initialOpen = false;
             }
         }
 
@@ -230,7 +184,7 @@ namespace CommandTerminal
             if (_shouldScrollToBottom)
             {
                 _autoScrollFrameCount++;
-                scroll_position.y = Mathf.Infinity;
+                GUI.ScrollPosition.y = Mathf.Infinity;
                 if (_autoScrollFrameCount < _maxAutoScrollFrames)
                 {
                     _shouldScrollToBottom = false;
@@ -243,73 +197,41 @@ namespace CommandTerminal
         {
             foreach (var log in Buffer.Logs)
             {
-                label_style.normal.textColor = TerminalUtils.GetLogColor(Settings, log.type);
-                GUILayout.Label(log.message, label_style);
+                _labelStyle.normal.textColor = CommandUtils.GetLogColor(Settings, log.Type);
+                GUILayout.Label(log.Message, _labelStyle);
             }
         }
 
-        void HandleOpenness()
+        public void EnterCommand()
         {
-            float dt = Settings.ToggleSpeed * Time.deltaTime;
-
-            if (current_open_t < open_target)
-            {
-                current_open_t += dt;
-                if (current_open_t > open_target) current_open_t = open_target;
-            }
-            else if (current_open_t > open_target)
-            {
-                current_open_t -= dt;
-                if (current_open_t < open_target) current_open_t = open_target;
-            }
-            else
-            {
-                return;
-            }
-
-            window = new Rect(0, current_open_t - real_window_size, Screen.width, real_window_size);
-        }
-
-        void EnterCommand()
-        {
-            Log(TerminalLogType.Input, "{0}", command_text);
-            Shell.Run(command_text);
-            History.Push(command_text);
+            Log(LogType.Input, "[TERM] {0}", States.CommandText);
+            Shell.Run(States.CommandText);
+            History.Push(States.CommandText);
 
             if (IssuedError)
             {
-                Log(TerminalLogType.Error, "{0}", Shell.IssuedErrorMessage);
+                Log(LogType.Error, "[TERM] {0}", Shell.IssuedErrorMessage);
             }
 
-            command_text = "";
-            scroll_position.y = int.MaxValue;
+            States.CommandText = "";
+            GUI.ScrollPosition.y = int.MaxValue;
         }
 
-        void CompleteCommand()
+        public void CompleteCommand()
         {
-            string head_text = command_text;
+            string head_text = States.CommandText;
             string[] completion_buffer = Autocomplete.Complete(ref head_text);
             int completion_length = completion_buffer.Length;
 
             if (completion_length == 1)
             {
-                command_text = head_text + completion_buffer[0];
+                States.CommandText = head_text + completion_buffer[0];
             }
             else if (completion_length > 1)
             {
                 Log(string.Join("    ", completion_buffer));
-                scroll_position.y = int.MaxValue;
+                GUI.ScrollPosition.y = int.MaxValue;
             }
-        }
-
-        void CursorToEnd()
-        {
-            if (editor_state == null)
-            {
-                editor_state = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
-            }
-
-            editor_state.MoveCursorToPosition(new Vector2(999, 999));
         }
 
         public void LogError(string message)
@@ -324,7 +246,7 @@ namespace CommandTerminal
 
         public void ToggleCommandInput(bool enable)
         {
-            _allowCommandInput = enable;
+            _allowInput = enable;
         }
 
         public bool IssuedError
@@ -334,86 +256,19 @@ namespace CommandTerminal
 
         public bool IsClosed
         {
-            get { return state == TerminalState.Close && Mathf.Approximately(current_open_t, open_target); }
+            get { return State == CommandState.Close && Mathf.Approximately(GUI.CurrentOpenT, GUI.OpenTarget); }
         }
 
         public void Log(string format, params object[] message)
         {
-            Log(TerminalLogType.ShellMessage, format, message);
+            Log(LogType.ShellMessage, format, message);
         }
 
-        public void Log(TerminalLogType type, string message, params object[] args)
+        public void Log(LogType type, string message, params object[] args)
         {
             string formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
-            Buffer.HandleLog(formattedMessage, type);
+            Buffer.Handle(formattedMessage, type);
             _shouldScrollToBottom = true;
-        }
-
-        public void SetState(TerminalState new_state)
-        {
-            PrepareForStateChange();
-            HandleStateChange(new_state);
-            state = new_state;
-        }
-
-        private void PrepareForStateChange()
-        {
-            input_fix = true;
-            cached_command_text = command_text;
-            command_text = "";
-        }
-
-        private void HandleStateChange(TerminalState new_state)
-        {
-            switch (new_state)
-            {
-                case TerminalState.Close:
-                    CloseTerminal();
-                    break;
-                case TerminalState.OpenSmall:
-                    OpenTerminalSmall();
-                    break;
-                case TerminalState.OpenFull:
-                default:
-                    OpenTerminalFull();
-                    break;
-            }
-        }
-
-        private void CloseTerminal()
-        {
-            open_target = 0;
-        }
-
-        private void OpenTerminalSmall()
-        {
-            open_target = Screen.height * Settings.MaxHeight * Settings.SmallTerminalRatio;
-            if (current_open_t > open_target)
-            {
-                CloseTerminal();
-                return;
-            }
-            real_window_size = open_target;
-            scroll_position.y = int.MaxValue;
-        }
-
-        private void OpenTerminalFull()
-        {
-            real_window_size = Screen.height * Settings.MaxHeight;
-            open_target = real_window_size;
-        }
-
-
-        public void ToggleState(TerminalState new_state)
-        {
-            if (state == new_state)
-            {
-                SetState(TerminalState.Close);
-            }
-            else
-            {
-                SetState(new_state);
-            }
         }
     }
 }

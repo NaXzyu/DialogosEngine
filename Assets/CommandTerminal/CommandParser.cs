@@ -9,69 +9,69 @@ namespace CommandTerminal
     {
         public static string ConvertCommandDataToCommandLine(CommandData commandData)
         {
-            string commandLine = commandData.Name;
+            string _commandLine = commandData.Name;
             foreach (var arg in commandData.Args)
             {
-                commandLine += " " + arg.String;
+                _commandLine += " " + arg.String;
             }
-            return commandLine;
+            return _commandLine;
         }
 
         public static string GetCommandNameFromLine(string line)
         {
-            var trimmedLine = line.Trim();
-            var firstSpaceIndex = trimmedLine.IndexOf(' ');
-            var commandName = trimmedLine.Substring(0, firstSpaceIndex);
-            return commandName;
+            var _trimmedLine = line.Trim();
+            var _firstSpaceIndex = _trimmedLine.IndexOf(' ');
+            var _commandName = _trimmedLine.Substring(0, _firstSpaceIndex);
+            return _commandName;
         }
 
         public static string ParsedCommandLine(string line)
         {
-            string[] parts = line.Replace("{", "").Replace("}", "").Split(',');
-            string parsedLine = string.Join(" ", parts.Take(parts.Length - 1).Select(p => p.Trim()));
-            string lastPart = parts.Last().Trim();
+            string[] _parts = line.Replace("{", "").Replace("}", "").Split(',');
+            string _parsedLine = string.Join(" ", _parts.Take(_parts.Length - 1).Select(p => p.Trim()));
+            string _lastPart = _parts.Last().Trim();
 
-            if (!Regex.IsMatch(lastPart, "^\".*\"$"))
+            if (!Regex.IsMatch(_lastPart, "^\".*\"$"))
             {
-                parsedLine += " \"" + lastPart + "\"";
+                _parsedLine += " \"" + _lastPart + "\"";
             }
             else
             {
-                parsedLine += " " + lastPart;
+                _parsedLine += " " + _lastPart;
             }
 
-            return parsedLine;
+            return _parsedLine;
         }
 
         public static CommandData? ParseCommandData(string line)
         {
             try
             {
-                var matches = Regex.Matches(line, @"[\""].+?[\""]|[^ ]+")
+                var _matches = Regex.Matches(line, @"[\""].+?[\""]|[^ ]+")
                                    .Cast<Match>()
                                    .Select(m => m.Value)
                                    .ToList();
 
-                string commandName = matches[0].Trim().ToUpper();
-                matches.RemoveAt(0);
+                string _commandName = _matches[0].Trim().ToUpper();
+                _matches.RemoveAt(0);
 
-                List<CommandArg> args = new List<CommandArg>();
+                List<CommandArg> _args = new List<CommandArg>();
 
-                foreach (var match in matches)
+                foreach (var _match in _matches)
                 {
-                    string argValue = match.Trim().Trim('\"');
-                    args.Add(new CommandArg { Value = argValue });
+                    string _argValue = _match.Trim().Trim('\"');
+                    _args.Add(new CommandArg { Value = _argValue });
                 }
 
                 return new CommandData
                 {
-                    Name = commandName,
-                    Args = args.ToArray(),
+                    Name = _commandName,
+                    Args = _args.ToArray(),
                 };
             }
             catch (Exception ex)
             {
-                Terminal.Instance.LogError($"Error parsing command data: {line}\nException: {ex.Message}");
+                Terminal.Instance.LogError($"[PRSR] Error parsing command data: {line}\nException: {ex.Message}");
                 return null;
             }
         }

@@ -4,10 +4,10 @@ using UnityEngine;
 
 namespace CommandTerminal
 {
-    public static class HelpCommand
+    public static class HelpCommands
     {
         [Command("help")]
-        public static void HelpProcedure(CommandArg[] args)
+        public static void HelpCommand(CommandArg[] args)
         {
             var terminal = Terminal.Instance;
             if (args.Length > 0)
@@ -15,7 +15,7 @@ namespace CommandTerminal
                 var name = args[0].String.ToUpper();
                 if (terminal.Shell.Commands.TryGetValue(name, out CommandData commandData))
                 {
-                    terminal.Log($"\nHelp for {name}: {commandData.HelpText}\n");
+                    terminal.Log($"\nHelp for {name}:\n\n    {commandData.HelpText}\n");
                 }
                 else
                 {

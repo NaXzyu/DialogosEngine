@@ -3,105 +3,106 @@ using CommandTerminal;
 using System;
 using System.Reflection;
 using System.Collections.Generic;
-using DialogosEngine;
 
-public class Commands
+namespace DialogosEngine
 {
-    public Dictionary<string, MethodInfo> Methods;
-    public const string k_RegisterCommand = "REGISTER";
-    public CommandParser CommandParser { get; private set; }
 
-    public Commands()
+    public class Commands
     {
-        Methods = TerminalUtils.CacheCommandMethods();
-        CommandParser = new CommandParser();
-    }
+        public Dictionary<string, MethodInfo> Methods;
+        public const string k_RegisterCommand = "REGISTER";
+        public CommandParser Parser { get; private set; }
 
-    public void Initialize(TextAsset bootfile)
-    {
-        string[] _lines = bootfile.text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (string _line in _lines)
+        public Commands()
         {
-            if (!_line.Trim().StartsWith("#") && !string.IsNullOrWhiteSpace(_line))
+            Methods = CommandUtils.CacheCommandMethods();
+            Parser = new CommandParser();
+        }
+
+        public void Initialize(TextAsset bootfile)
+        {
+            string[] _lines = bootfile.text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string _line in _lines)
             {
-                string _commandName = CommandParser.GetCommandNameFromLine(_line);
-                string _commandLine = CommandParser.ParsedCommandLine(_line);
-                CommandData? _commandData = CommandParser.ParseCommandData(_commandLine);
-                string _command = CommandParser.ConvertCommandDataToCommandLine(_commandData.Value);
+                if (!_line.Trim().StartsWith("#") && !string.IsNullOrWhiteSpace(_line))
+                {
+                    string _commandName = CommandParser.GetCommandNameFromLine(_line);
+                    string _commandLine = CommandParser.ParsedCommandLine(_line);
+                    CommandData? _commandData = CommandParser.ParseCommandData(_commandLine);
+                    string _command = CommandParser.ConvertCommandDataToCommandLine(_commandData.Value);
 
-                if (_commandData == null)
-                {
-                    Terminal.Instance.LogError("Critical Bootstrap Error. Quit.");
-                    Utility.Quit(3);
-                }
+                    if (_commandData == null)
+                    {
+                        Terminal.Instance.LogError("[CMDS] Critical Bootstrap Error. Quit.");
+                        Utility.Quit(3);
+                    }
 
-                if (_commandName.ToUpper() == k_RegisterCommand)
-                {
-                    Register(_commandData);
-                }
-                else
-                {
-                    Terminal.Instance.Shell.Run(_command);
+                    if (_commandName.ToUpper() == k_RegisterCommand)
+                    {
+                        Register(_commandData);
+                    }
+                    else
+                    {
+                        Terminal.Instance.Shell.Run(_command);
+                    }
                 }
             }
         }
-    }
 
-    public void Register(CommandData? commandData)
-    {
-        if (commandData.HasValue)
+        public void Register(CommandData? commandData)
         {
-            CommandData _data = commandData.Value;
-
-            if (_data.Args.Length == 4)
+            if (commandData.HasValue)
             {
-                string _commandName = _data.Args[0].String;
-                if (Methods.TryGetValue(_commandName.ToUpper(), out MethodInfo _methodInfo))
+                CommandData _data = commandData.Value;
+
+                if (_data.Args.Length == 4)
                 {
-                    int _minArgs = _data.Args[1].Int;
-                    int _maxArgs = _data.Args[2].Int;
+                    string _name = _data.Args[0].String;
+                    if (Methods.TryGetValue(_name.ToUpper(), out MethodInfo _method))
+                    {
+                        int _minArgs = _data.Args[1].Int;
+                        int _maxArgs = _data.Args[2].Int;
 
-                    _data.Name = _commandName;
-                    _data.MinArgs = _minArgs;
-                    _data.MaxArgs = _maxArgs;
-                    _data.Action = (CommandArg[] args) => _methodInfo.Invoke(null, new object[] { args });
-                    _data.HelpText = _data.Args[3].String;
+                        _data.Name = _name;
+                        _data.MinArgs = _minArgs;
+                        _data.MaxArgs = _maxArgs;
+                        _data.Action = (CommandArg[] args) => _method.Invoke(null, new object[] { args });
+                        _data.HelpText = _data.Args[3].String;
 
-                    Terminal.Instance.Log("[CMDS] Register: \"" + _commandName.ToUpper() + "\"");
-                    Terminal.Instance.Shell.AddCommand(_commandName.ToUpper(), _data);
+                        Terminal.Instance.Log("[CMDS] Register: \"" + _name.ToUpper() + "\"");
+                        Terminal.Instance.Shell.AddCommand(_name.ToUpper(), _data);
+                    }
+                    else
+                    {
+                        Terminal.Instance.LogError($"[CMDS] Command method not found: {_name}");
+                    }
                 }
                 else
                 {
-                    Terminal.Instance.LogError($"Command method not found: {_commandName}");
+                    Terminal.Instance.LogError($"[CMDS] Expected 4 arguments, got {_data.Args.Length}.");
                 }
             }
             else
             {
-                Terminal.Instance.LogError($"Command data arguments expected 4, got {_data.Args.Length}.");
+                Terminal.Instance.LogError($"[CMDS] Command data is null.");
             }
         }
-        else
+
+
+        public void Unregister(string commandName)
         {
-            Terminal.Instance.LogError($"Command data is null.");
-        }
-    }
-
-
-    public void Unregister(string commandName)
-    {
-        string commandKey = commandName.ToUpper();
-
-        if (Methods.TryGetValue(commandKey, out MethodInfo methodInfo))
-        {
-            Terminal.Instance.Shell.Unregister(commandKey);
-            Methods.Remove(commandKey);
-
-            Terminal.Instance.Log($"Unregistered Command: {commandKey}");
-        }
-        else
-        {
-            Terminal.Instance.LogError($"Command method not found: {commandName}");
+            string _key = commandName.ToUpper();
+            if (Methods.TryGetValue(_key, out MethodInfo _method))
+            {
+                Terminal.Instance.Log($"[CMDS] Unregister: \"{_key.ToUpper()}\"");
+                Terminal.Instance.Shell.Unregister(_key);
+                Methods.Remove(_key);
+            }
+            else
+            {
+                Terminal.Instance.LogError($"Command method not found: {commandName}");
+            }
         }
     }
 }

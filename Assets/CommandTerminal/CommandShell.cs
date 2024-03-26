@@ -6,52 +6,52 @@ namespace CommandTerminal
 {
     public class CommandShell
     {
-        Dictionary<string, CommandData> commands = new Dictionary<string, CommandData>();
-        List<CommandArg> arguments = new List<CommandArg>();
+        Dictionary<string, CommandData> _Commands = new Dictionary<string, CommandData>();
+        List<CommandArg> _Args = new List<CommandArg>();
 
         public string IssuedErrorMessage { get; private set; }
 
         public Dictionary<string, CommandData> Commands
         {
-            get { return commands; }
+            get { return _Commands; }
         }
 
         public void Run(string line)
         {
-            string remaining = line;
+            string _remaining = line;
             IssuedErrorMessage = null;
-            arguments.Clear();
+            _Args.Clear();
 
-            while (remaining != "")
+            while (_remaining != "")
             {
-                var argument = TerminalUtils.EatArgument(ref remaining);
+                var _arg = CommandUtils.EatArgument(ref _remaining);
 
-                if (argument.String != "")
+                if (_arg.String != "")
                 {
-                    arguments.Add(argument);
+                    _Args.Add(_arg);
                 }
             }
 
-            if (arguments.Count == 0)
+            if (_Args.Count == 0)
             {
                 return;
             }
 
-            string command_name = arguments[0].String.ToUpper();
-            arguments.RemoveAt(0);
+            string _commandName = _Args[0].String.ToUpper();
+            _Args.RemoveAt(0);
 
-            if (!commands.ContainsKey(command_name))
+            if (!_Commands.ContainsKey(_commandName))
             {
-                IssueErrorMessage("Command {0} could not be found", command_name);
+                IssueErrorMessage("[SHEL] Command {0} could not be found", _commandName);
                 return;
             }
 
-            Run(command_name, arguments.ToArray());
+            Run(_commandName, _Args.ToArray());
         }
 
         public void Run(string commandName, CommandArg[] arguments)
         {
-            if (commands.TryGetValue(commandName, out CommandData _command))
+            if (_Commands.TryGetValue(commandName, out CommandData _command))
             {
                 int _argCount = arguments.Length;
                 string _errorMsg = null;
@@ -72,7 +72,7 @@ namespace CommandTerminal
                 {
                     string _pluralFix = _requiredArg == 1 ? "" : "s";
                     IssueErrorMessage(
-                        "{0} requires {1} {2} argument{3}",
+                        "[SHEL] {0} requires {1} {2} argument{3}",
                         commandName,
                         _errorMsg,
                         _requiredArg,
@@ -85,7 +85,7 @@ namespace CommandTerminal
             }
             else
             {
-                Terminal.Instance.LogError($"Command not found: {commandName}");
+                Terminal.Instance.LogError($"[SHEL] Command not found: {commandName}");
             }
         }
 
@@ -93,13 +93,13 @@ namespace CommandTerminal
         {
             name = name.ToUpper();
 
-            if (commands.ContainsKey(name))
+            if (_Commands.ContainsKey(name))
             {
-                IssueErrorMessage("Command {0} is already defined.", name);
+                IssueErrorMessage("[SHEL] Command {0} is already defined.", name);
                 return;
             }
 
-            commands.Add(name, data);
+            _Commands.Add(name, data);
         }
 
         public void IssueErrorMessage(string format, params object[] message)
@@ -111,13 +111,13 @@ namespace CommandTerminal
         {
             commandKey = commandKey.ToUpper();
 
-            if (commands.ContainsKey(commandKey))
+            if (_Commands.ContainsKey(commandKey))
             {
-                commands.Remove(commandKey);
+                _Commands.Remove(commandKey);
             }
             else
             {
-                IssueErrorMessage("Unregistered Command {0} could not be found.", commandKey);
+                IssueErrorMessage("[SHEL] Unregistered Command {0} could not be found.", commandKey);
             }
         }
     }

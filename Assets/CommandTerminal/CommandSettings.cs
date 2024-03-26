@@ -7,7 +7,7 @@ namespace CommandTerminal
         public float MaxHeight { get; set; } = 1f;
         public float SmallTerminalRatio { get; set; } = 0.33f;
         public float ToggleSpeed { get; set; } = 1000;
-        public int BufferSize { get; set; } = 4096;
+        public int BufferSize { get; set; } = 1000000;
         public Font ConsoleFont { get; set; }
         public string InputCaret { get; set; } = ">";
         public float InputContrast { get; set; }
