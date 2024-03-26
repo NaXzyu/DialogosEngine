@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Diagnostics;
 using System.Threading;
+using CommandTerminal;
 
 namespace DialogosEngine
 {
@@ -16,7 +17,7 @@ namespace DialogosEngine
                 _Semaphore.Wait();
                 try
                 {
-                    Process _process = new Process();
+                    Process _process = new();
                     string _path = Application.dataPath + batchFile;
                     _process.StartInfo.FileName = _path;
                     _process.StartInfo.UseShellExecute = false;
@@ -27,12 +28,12 @@ namespace DialogosEngine
                     while (!_process.StandardOutput.EndOfStream)
                     {
                         string _line = _process.StandardOutput.ReadLine();
-                        UnityEngine.Debug.Log(_line);
+                        CommandSystem.Log(_line);
                     }
                     if (!_process.StandardError.EndOfStream)
                     {
                         string _error = _process.StandardError.ReadToEnd();
-                        UnityEngine.Debug.LogError(_error);
+                        CommandSystem.LogError(_error);
                     }
                     _process.WaitForExit();
                 }

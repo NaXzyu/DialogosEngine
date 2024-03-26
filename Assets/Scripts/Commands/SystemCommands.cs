@@ -28,13 +28,13 @@ namespace CommandTerminal
                 }
                 else
                 {
-                    Terminal.Instance.LogError("The Terminal is null.");
+                    Terminal.Instance.LogError("[SYST] The Terminal is null.");
                     Utility.Quit(3);
                 }
             }
             else
             {
-                Terminal.Instance.LogError("Insufficient arguments provided for 'register' command.");
+                Terminal.Instance.LogError("[SYST] Insufficient arguments provided for 'register' command.");
             }
         }
 
@@ -48,7 +48,7 @@ namespace CommandTerminal
             }
             else
             {
-                Terminal.Instance.LogError("Unable to locate the terminal in TerminalCommand.");
+                Terminal.Instance.LogError("[SYST] Unable to locate the terminal in TerminalCommand.");
             }
         }
     }
