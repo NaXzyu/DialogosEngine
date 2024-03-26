@@ -8,6 +8,7 @@ namespace CommandTerminal
         public const string k_KeyEventUp = "up";
         public const string k_KeyEventDown = "down";
         public const string k_KeyEventTab = "tab";
+
         public void HandleKeyboardEvents(Terminal terminal)
         {
             if (terminal.MoveCursor)

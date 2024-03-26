@@ -15,7 +15,7 @@ namespace CommandTerminal
         GUIStyle _labelStyle;
         GUIStyle _inputStyle;
         bool _allowInput = true;
-        bool _shouldScrollToBottom = false;
+        bool _scrollToBottom = false;
         int _autoScrollFrameCount = 0;
         int _maxAutoScrollFrames = 5;
 
@@ -31,6 +31,7 @@ namespace CommandTerminal
         public CommandStates States { get; private set; }
         public CommandEvents Events { get; private set; }
         public CommandGUI GUI { get; private set; }
+        public CommandSystem System { get; private set; }
 
         void Awake()
         {
@@ -49,6 +50,7 @@ namespace CommandTerminal
             States = new CommandStates();
             Events = new CommandEvents();
             GUI = new CommandGUI();
+            System = new CommandSystem();
         }
 
         void Start()
@@ -58,7 +60,7 @@ namespace CommandTerminal
                 Settings.ConsoleFont = Resources.Load(k_FontPath, typeof(Font)) as Font;
                 if (Settings.ConsoleFont == null)
                 {
-                    Log(LogType.Error, "[EROR] The font {0} could not be loaded.", k_FontPath);
+                    Log(LogType.Error, "[ERRO] The font {0} could not be loaded.", k_FontPath);
                     Utility.Quit(3);
                 }
             }
@@ -72,7 +74,7 @@ namespace CommandTerminal
 
             if (IssuedError)
             {
-                Log(LogType.Error, "[EROR] {0}", Shell.IssuedErrorMessage);
+                Log(LogType.Error, "[ERRO] {0}", Shell.IssuedErrorMessage);
             }
 
             foreach (var _command in Shell.Commands)
@@ -82,6 +84,11 @@ namespace CommandTerminal
 
             States.SetState(this, CommandState.OpenFull);
             _initialOpen = true;
+        }
+
+        private void Update()
+        {
+            System?.Update();
         }
 
         void OnGUI()
@@ -179,13 +186,13 @@ namespace CommandTerminal
 
         void CheckScrollToBottom()
         {
-            if (_shouldScrollToBottom)
+            if (_scrollToBottom)
             {
                 _autoScrollFrameCount++;
                 GUI.ScrollPosition.y = Mathf.Infinity;
                 if (_autoScrollFrameCount < _maxAutoScrollFrames)
                 {
-                    _shouldScrollToBottom = false;
+                    _scrollToBottom = false;
                     _autoScrollFrameCount = 0;
                 }
             }
@@ -232,16 +239,6 @@ namespace CommandTerminal
             }
         }
 
-        public void LogError(string message)
-        {
-            Shell.IssueErrorMessage($"{message}");
-        }
-
-        public void LogWarning(string message)
-        {
-            Log($"[WARN] {message}");
-        }
-
         public void ToggleCommandInput(bool enable)
         {
             _allowInput = enable;
@@ -266,7 +263,16 @@ namespace CommandTerminal
         {
             string formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
             Buffer.Handle(formattedMessage, type);
-            _shouldScrollToBottom = true;
+            _scrollToBottom = true;
+        }
+        public void LogWarning(string message)
+        {
+            Log($"[WARN] {message}");
+        }
+
+        public void LogError(string message)
+        {
+            Shell.IssueErrorMessage($"{message}");
         }
     }
 }

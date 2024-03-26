@@ -42,7 +42,7 @@ namespace CommandTerminal
 
             if (!_Commands.ContainsKey(_commandName))
             {
-                IssueErrorMessage("[SHEL] Command {0} could not be found", _commandName);
+                IssueErrorMessage("[SHLL] Command {0} could not be found", _commandName);
                 return;
             }
 
@@ -72,7 +72,7 @@ namespace CommandTerminal
                 {
                     string _pluralFix = _requiredArg == 1 ? "" : "s";
                     IssueErrorMessage(
-                        "[SHEL] {0} requires {1} {2} argument{3}",
+                        "[SHLL] {0} requires {1} {2} argument{3}",
                         commandName,
                         _errorMsg,
                         _requiredArg,
@@ -85,7 +85,7 @@ namespace CommandTerminal
             }
             else
             {
-                Terminal.Instance.LogError($"[SHEL] Command not found: {commandName}");
+                Terminal.Instance.LogError($"[SHLL] Command not found: {commandName}");
             }
         }
 
@@ -95,7 +95,7 @@ namespace CommandTerminal
 
             if (_Commands.ContainsKey(name))
             {
-                IssueErrorMessage("[SHEL] Command {0} is already defined.", name);
+                IssueErrorMessage("[SHLL] Command {0} is already defined.", name);
                 return;
             }
 
@@ -117,7 +117,7 @@ namespace CommandTerminal
             }
             else
             {
-                IssueErrorMessage("[SHEL] Unregistered Command {0} could not be found.", commandKey);
+                IssueErrorMessage("[SHLL] Unregistered Command {0} could not be found.", commandKey);
             }
         }
     }
