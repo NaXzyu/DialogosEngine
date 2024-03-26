@@ -30,20 +30,33 @@ namespace CommandTerminal
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error parsing command data: {line}\nException: {ex.Message}");
+                Terminal.Instance.LogError($"Error parsing command data: {line}\nException: {ex.Message}");
                 return null;
             }
         }
 
         public static CommandInfo? InferCommandInfo(CommandData? commandData, Dictionary<string, MethodInfo> commandMethods)
         {
+            if (commandMethods != null)
+            {
+                foreach (var entry in commandMethods)
+                {
+                    Terminal.Instance.Log($"Command method: {entry.Key}");
+                }
+            }
+            else
+            {
+                Terminal.Instance.LogError("commandMethods is null.");
+                return null;
+            }
+            Terminal.Instance.Log(commandData.Value.CommandName.ToUpper());
             if (commandData.HasValue)
             {
-                if (commandMethods.TryGetValue(commandData.Value.ProcedureName, out MethodInfo methodInfo))
+                if (commandMethods.TryGetValue(commandData.Value.CommandName.ToUpper(), out MethodInfo methodInfo))
                 {
                     return new CommandInfo
                     {
-                        procedure = (CommandArg[] args) => methodInfo.Invoke(null, new object[] { args }),
+                        command = (CommandArg[] args) => methodInfo.Invoke(null, new object[] { args }),
                         min_arg_count = commandData.Value.MinArgs,
                         max_arg_count = commandData.Value.MaxArgs,
                         help = commandData.Value.HelpText
@@ -51,13 +64,13 @@ namespace CommandTerminal
                 }
                 else
                 {
-                    Debug.LogError($"Command method not found: {commandData.Value.ProcedureName}");
+                    Terminal.Instance.LogError($"Command method not found: {commandData.Value.CommandName}");
                     return null;
                 }
             }
             else
             {
-                Debug.LogError("CommandData does not have a value.");
+                Terminal.Instance.LogError("CommandData does not have a value.");
                 return null;
             }
         }

@@ -12,7 +12,6 @@ public class Bootstrap : MonoBehaviour
     public const string k_Welcome = "welcome";
     public const string k_Interpreter = "ScriptInterpreter";
     public static readonly string[] LineSeparators = new[] { "\r\n", "\r", "\n" };
-    private Terminal _terminal;
 
     private void Start()
     {
@@ -22,37 +21,37 @@ public class Bootstrap : MonoBehaviour
 
     private void InitializeTerminal()
     {
-        _terminal = FindFirstObjectByType<Terminal>();
-        if (_terminal == null)
+        Terminal.Instance = FindFirstObjectByType<Terminal>();
+        if (Terminal.Instance == null)
         {
             Debug.LogError("Unable to find the terminal");
             Utility.Quit();
         }
-        _terminal.ToggleCommandInput(false);
+        Terminal.Instance.ToggleCommandInput(false);
     }
 
     private void LoadBootstrapFile()
     {
-        _terminal.Log("[BOOT] Attempting to load bootstrap file...");
+        Terminal.Instance.Log("[BOOT] Attempting to load bootstrap file...");
         BootFile = Resources.Load<TextAsset>(k_Bootstrap);
 
         if (BootFile == null)
         {
-            _terminal.LogError("[BOOT] ERROR: Bootstrap file missing, unable to boot.");
+            Terminal.Instance.LogError("[BOOT] ERROR: Bootstrap file missing, unable to boot.");
             StartCoroutine(WaitAndQuit());
         }
         else
         {
-            _terminal.Log("[BOOT] Bootstrap file loaded successfully.");
+            Terminal.Instance.Log("[BOOT] Bootstrap file loaded successfully.");
             StartCoroutine(BootSequence());
         }
     }
 
     IEnumerator WaitAndQuit()
     {
-        _terminal.Log("[BOOT] Waiting 3 seconds before quitting...");
+        Terminal.Instance.Log("[BOOT] Waiting 3 seconds before quitting...");
         yield return new WaitForSeconds(3);
-        _terminal.Log("[BOOT] Quitting application");
+        Terminal.Instance.Log("[BOOT] Quitting application");
         Utility.Quit();
     }
 
@@ -77,47 +76,46 @@ public class Bootstrap : MonoBehaviour
         }
         else
         {
-            _terminal.LogError("[BOOT] Welcome file not found in Assets/Resources");
+            Terminal.Instance.LogError("[BOOT] Welcome file not found in Assets/Resources");
         }
     }
 
     private void RunBoot(TextAsset bootstrapFile)
     {
-        _terminal.TerminalCommands.Initialize(_terminal, bootstrapFile);
-        _terminal.Log("[BOOT] Sequence COMPLETE!");
+        Terminal.Instance.TerminalCommands.Initialize(bootstrapFile);
+        Terminal.Instance.Log("[BOOT] Sequence COMPLETE!");
     }
 
     private void PrintLinesFromAsset(TextAsset asset, string prefix)
     {
         string[] lines = asset.text.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries);
-        _terminal.Buffer.Clear();
+        Terminal.Instance.Buffer.Clear();
         foreach (string line in lines)
         {
             if (!line.Trim().StartsWith("#") && !string.IsNullOrWhiteSpace(line))
             {
-                _terminal.Log(prefix + line);
+                Terminal.Instance.Log(prefix + line);
             }
         }
     }
 
     private void FinalizeBoot()
     {
-        if (_clearPostBoot) _terminal.Buffer.Clear();
-        _terminal.ToggleCommandInput(true);
+        if (_clearPostBoot) Terminal.Instance.Buffer.Clear();
+        Terminal.Instance.ToggleCommandInput(true);
     }
 
     private void PostBoot()
     {
-        ScriptInterpreter scriptInterpreter = ScriptInterpreter.CreateInstance(_terminal, k_Interpreter);
-        scriptInterpreter.Bind(_terminal);
+        ScriptInterpreter scriptInterpreter = ScriptInterpreter.CreateInstance(k_Interpreter);
         if (scriptInterpreter != null)
         {
             scriptInterpreter.InitializeAndExecuteScript(k_PostBoot);
-            _terminal.Log("[BOOT] ScriptInterpreter: Verification successful");
+            Terminal.Instance.Log("[BOOT] ScriptInterpreter: Verification successful");
         }
         else
         {
-            _terminal.LogError("[BOOT] ScriptInterpreter: Verification failed");
+            Terminal.Instance.LogError("[BOOT] ScriptInterpreter: Verification failed");
         }
     }
 }

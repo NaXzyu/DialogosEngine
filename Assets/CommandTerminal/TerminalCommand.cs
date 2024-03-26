@@ -6,18 +6,17 @@ using System.Collections.Generic;
 
 public class TerminalCommand
 {
-    public static Terminal Terminal;
     public Dictionary<string, MethodInfo> CommandMethods;
     public const string k_RegisterCommand = "Register";
+    public const string k_RegisterProcedure = "RegisterProcedure";
 
     public TerminalCommand()
     {
         CommandMethods = TerminalUtils.CacheCommandMethods();
     }
 
-    public void Initialize(Terminal terminal, TextAsset bootstrapFile)
+    public void Initialize(TextAsset bootstrapFile)
     {
-        Terminal = terminal;
         RegisterCommandsFromAsset(bootstrapFile);
     }
 
@@ -29,63 +28,62 @@ public class TerminalCommand
         {
             if (!line.Trim().StartsWith("#") && !string.IsNullOrWhiteSpace(line))
             {
-                CommandData? commandData = CommandUtils.ParseCommandData(line);
 
+                CommandData? commandData = CommandUtils.ParseCommandData(line);
                 if (commandData == null)
                 {
-                    Terminal.LogError("Critical Bootstrap Error. Quit.");
+                    Terminal.Instance.LogError("Critical Bootstrap Error. Quit.");
                     Utility.Quit();
                 }
 
                 if (commandData.Value.CommandName == k_RegisterCommand &&
-                    commandData.Value.ProcedureName == k_RegisterCommand)
+                    commandData.Value.ProcedureName == k_RegisterProcedure)
                 {
                     CommandInfo? commandInfo = CommandUtils.InferCommandInfo(commandData, CommandMethods);
-                    RegisterCommand(commandInfo.Value.procedure.Method.Name, commandInfo.Value.min_arg_count, commandInfo.Value.max_arg_count, commandInfo.Value.help);
+                    RegisterCommand(commandInfo.Value.command.Method.Name, commandInfo.Value.min_arg_count, commandInfo.Value.max_arg_count, commandInfo.Value.help);
                 }
                 else
                 {
-                    Terminal.Shell.RunCommand(line);
+                    Terminal.Instance.Shell.RunCommand(line);
                 }
             }
         }
     }
-    public void RegisterCommand(string procedureName, int minArgs, int maxArgs, string helpText)
+    public void RegisterCommand(string commandName, int minArgs, int maxArgs, string helpText)
     {
-        Debug.Log(procedureName);
-        if (CommandMethods.TryGetValue(procedureName, out MethodInfo methodInfo))
+        if (CommandMethods.TryGetValue(commandName.ToUpper(), out MethodInfo methodInfo))
         {
             CommandInfo commandInfo = new CommandInfo
             {
-                procedure = (CommandArg[] args) => methodInfo.Invoke(null, new object[] { args }),
+                command = (CommandArg[] args) => methodInfo.Invoke(null, new object[] { args }),
                 min_arg_count = minArgs,
                 max_arg_count = maxArgs,
                 help = helpText
             };
 
-            Terminal.Shell.AddCommand(procedureName.ToUpper(), commandInfo);
-            Terminal.Log($"Registered Command: {procedureName.ToUpper()}, MinArgs: {minArgs}, MaxArgs: {maxArgs}, Help: {helpText}");
+            Terminal.Instance.Shell.AddCommand(commandName.ToUpper(), commandInfo);
+            Terminal.Instance.Log($"Registered Command: {commandName.ToUpper()}, MinArgs: {minArgs}, MaxArgs: {maxArgs}, Help: {helpText}");
         }
         else
         {
-            Terminal.LogError($"Command method not found: {procedureName}");
+            Terminal.Instance.LogError($"Command method not found: {commandName}");
         }
     }
 
-    public void UnregisterCommand(string procedureName)
+    public void UnregisterCommand(string commandName)
     {
-        string commandKey = procedureName.ToUpper();
+        string commandKey = commandName.ToUpper();
 
         if (CommandMethods.TryGetValue(commandKey, out MethodInfo methodInfo))
         {
-            Terminal.Shell.Unregister(commandKey);
+            Terminal.Instance.Shell.Unregister(commandKey);
             CommandMethods.Remove(commandKey);
 
-            Terminal.Log($"Unregistered Command: {commandKey}");
+            Terminal.Instance.Log($"Unregistered Command: {commandKey}");
         }
         else
         {
-            Terminal.LogError($"Command method not found: {procedureName}");
+            Terminal.Instance.LogError($"Command method not found: {commandName}");
         }
     }
 }

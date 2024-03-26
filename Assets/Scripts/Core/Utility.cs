@@ -1,13 +1,15 @@
-using UnityEngine;
+using System.Threading.Tasks;
 
-public class Utility
+public static class Utility
 {
-    public static void Quit()
+    public static async void Quit()
     {
-#if UNITY_EDITOR    
+        await Task.Delay(5000); // Wait for 5 seconds
+
+#if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
-            Application.Quit();
+        Application.Quit();
 #endif
     }
 }

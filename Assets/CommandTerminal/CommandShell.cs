@@ -94,7 +94,7 @@ namespace CommandTerminal
                 return;
             }
 
-            command.procedure(arguments);
+            command.command(arguments);
         }
 
         public void AddCommand(string name, CommandInfo info)

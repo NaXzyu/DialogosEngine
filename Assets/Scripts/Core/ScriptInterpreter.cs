@@ -8,9 +8,8 @@ public class ScriptInterpreter : MonoBehaviour
 {
     private Queue<string> commandQueue;
     public const string k_ScriptExtension = ".dil";
-    private Terminal _terminal;
 
-    public static ScriptInterpreter CreateInstance(Terminal terminal, string prefabName)
+    public static ScriptInterpreter CreateInstance(string prefabName)
     {
         GameObject scriptInterpreterPrefab = Resources.Load<GameObject>(prefabName);
         if (scriptInterpreterPrefab != null)
@@ -18,26 +17,20 @@ public class ScriptInterpreter : MonoBehaviour
             ScriptInterpreter instance = Instantiate(scriptInterpreterPrefab).GetComponent<ScriptInterpreter>();
             if (instance != null)
             {
-                terminal.Log("[SCPT] ScriptInterpreter loaded successfully");
+                Terminal.Instance.Log("[SCPT] ScriptInterpreter loaded successfully");
                 return instance;
             }
             else
             {
-                terminal.LogError("[SCPT] ScriptInterpreter component not found on prefab.");
+                Terminal.Instance.LogError("[SCPT] ScriptInterpreter component not found on prefab.");
                 return null;
             }
         }
         else
         {
-            terminal.LogError("[SCPT] Failed to load ScriptInterpreter prefab. Please ensure it is located in the Assets/Resources folder.");
+            Terminal.Instance.LogError("[SCPT] Failed to load ScriptInterpreter prefab. Please ensure it is located in the Assets/Resources folder.");
             return null;
         }
-    }
-
-    public ScriptInterpreter Bind(Terminal terminal)
-    {
-        _terminal = terminal;
-        return this;
     }
 
     public void LoadAndExecuteScript(string scriptName, Queue<string> queue)
@@ -58,7 +51,7 @@ public class ScriptInterpreter : MonoBehaviour
         }
         else
         {
-            _terminal.LogError($"[SCPT] Script not found at path: {_scriptPath}");
+            Terminal.Instance.LogError($"[SCPT] Script not found at path: {_scriptPath}");
         }
     }
 
@@ -82,17 +75,17 @@ public class ScriptInterpreter : MonoBehaviour
     {
         bool _commandCompleted = false;
 
-        _terminal.Shell.RunCommand(command);
+        Terminal.Instance.Shell.RunCommand(command);
         yield return new WaitForSeconds(5); // Simulate command execution time
         _commandCompleted = true;
 
         if (!_commandCompleted)
         {
-            _terminal.LogError($"[SCPT] Command execution timed out: {command}");
+            Terminal.Instance.LogError($"[SCPT] Command execution timed out: {command}");
         }
         else
         {
-            _terminal.Log($"[SCPT] Command execution completed: {command}");
+            Terminal.Instance.Log($"[SCPT] Command execution completed: {command}");
         }
     }
 }

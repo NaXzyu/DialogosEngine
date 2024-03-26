@@ -10,27 +10,21 @@ namespace CommandTerminal
         [Command("register")]
         public static void RegisterProcedure(CommandArg[] args)
         {
-            var terminal = TerminalCommand.Terminal;
             var name = args[0].String;
             var minArgs = args[1].Int;
             var maxArgs = args[2].Int;
             var helpText = args[3].String;
 
-            if (terminal != null)
+            if (Terminal.Instance != null)
             {
-                if (terminal.TerminalCommands.CommandMethods.ContainsKey(name))
+                if (Terminal.Instance.TerminalCommands.CommandMethods.ContainsKey(name))
                 {
-                    terminal.TerminalCommands.RegisterCommand(name, minArgs, maxArgs, helpText);
-                }
-                else
-                {
-                    Debug.LogError($"Command {name} is not found in CommandMethods and cannot be registered.");
+                    Terminal.Instance.TerminalCommands.RegisterCommand(name, minArgs, maxArgs, helpText);
+                    return;
                 }
             }
-            else
-            {
-                Debug.LogError("Unable to locate the terminal in TerminalCommand.");
-            }
+            Terminal.Instance.LogError("The Terminal is null.");
+            Utility.Quit();
         }
 
 
@@ -38,15 +32,13 @@ namespace CommandTerminal
         [Command("unregister")]
         public static void UnregisterProcedure(CommandArg[] args)
         {
-            var terminal = TerminalCommand.Terminal;
-
-            if (terminal != null)
+            if (Terminal.Instance != null)
             {
-                terminal.TerminalCommands.UnregisterCommand(args[0].String);
+                Terminal.Instance.TerminalCommands.UnregisterCommand(args[0].String);
             }
             else
             {
-                Debug.LogError("Unable to local the terminal in TerminalCommand.");
+                Terminal.Instance.LogError("Unable to local the terminal in TerminalCommand.");
             }
         }
 

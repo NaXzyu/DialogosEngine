@@ -30,10 +30,10 @@ namespace CommandTerminal
             foreach (var method in methodsWithCommandAttribute)
             {
                 var attribute = (CommandAttribute)method.GetCustomAttributes(typeof(CommandAttribute), false).First();
-                if (!methodDictionary.ContainsKey(attribute.Name))
+                string keyName = attribute.Name.ToUpper();
+                if (!methodDictionary.ContainsKey(keyName))
                 {
-                    methodDictionary.Add(attribute.Name, method);
-                    Debug.Log($"Cached Command Method: {method.DeclaringType.FullName}.{method.Name}");
+                    methodDictionary.Add(keyName, method);
                 }
             }
 

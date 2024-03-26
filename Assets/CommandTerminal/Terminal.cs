@@ -5,6 +5,8 @@ namespace CommandTerminal
 {
     public class Terminal : MonoBehaviour
     {
+        public static Terminal Instance;
+
         TerminalState state;
         TextEditor editor_state;
         bool input_fix;
@@ -36,6 +38,7 @@ namespace CommandTerminal
 
         void Awake()
         {
+            Instance = this;
             Initialize();
         }
 
