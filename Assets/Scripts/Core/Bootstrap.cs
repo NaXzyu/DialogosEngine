@@ -75,7 +75,7 @@ public class Bootstrap : MonoBehaviour
 
     private void RunBoot(TextAsset bootstrap)
     {
-        Terminal.Instance.TerminalCommands.Initialize(bootstrap);
+        Terminal.Instance.Commands.Initialize(bootstrap);
         Terminal.Instance.Log("[BOOT] Sequence COMPLETE!");
     }
 

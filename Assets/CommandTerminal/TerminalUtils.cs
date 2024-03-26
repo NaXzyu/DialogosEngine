@@ -8,7 +8,7 @@ namespace CommandTerminal
 {
     public static class TerminalUtils
     {
-        public static Color GetLogColor(TerminalSettings settings, TerminalLogType type)
+        public static Color GetLogColor(CommandSettings settings, TerminalLogType type)
         {
             switch (type)
             {

@@ -24,7 +24,7 @@ namespace CommandTerminal
                         HelpText = _helpText
                     };
 
-                    Terminal.Instance.TerminalCommands.Register(_data);
+                    Terminal.Instance.Commands.Register(_data);
                 }
                 else
                 {
@@ -44,7 +44,7 @@ namespace CommandTerminal
         {
             if (Terminal.Instance != null)
             {
-                Terminal.Instance.TerminalCommands.Unregister(args[0].String);
+                Terminal.Instance.Commands.Unregister(args[0].String);
             }
             else
             {

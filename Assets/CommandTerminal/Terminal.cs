@@ -30,8 +30,8 @@ namespace CommandTerminal
         const string k_CommandTextInput = "command_text_field";
         const string k_FontPath = "fonts/F25_Bank_Printer";
 
-        public TerminalSettings TerminalSettings { get; private set; }
-        public Commands TerminalCommands { get; private set; }
+        public Commands Commands { get; private set; }
+        public CommandSettings Settings { get; private set; }
         public CommandLog Buffer { get; private set; }
         public CommandShell Shell { get; private set; }
         public CommandHistory History { get; private set; }
@@ -45,9 +45,9 @@ namespace CommandTerminal
 
         void Initialize()
         {
-            TerminalSettings = new TerminalSettings();
-            TerminalCommands = new Commands();
-            Buffer = new CommandLog(TerminalSettings.BufferSize);
+            Settings = new CommandSettings();
+            Commands = new Commands();
+            Buffer = new CommandLog(Settings.BufferSize);
             Shell = new CommandShell();
             History = new CommandHistory();
             Autocomplete = new CommandAutocomplete();
@@ -55,10 +55,10 @@ namespace CommandTerminal
 
         void Start()
         {
-            if (TerminalSettings.ConsoleFont == null)
+            if (Settings.ConsoleFont == null)
             {
-                TerminalSettings.ConsoleFont = Resources.Load(k_FontPath, typeof(Font)) as Font;
-                if (TerminalSettings.ConsoleFont == null)
+                Settings.ConsoleFont = Resources.Load(k_FontPath, typeof(Font)) as Font;
+                if (Settings.ConsoleFont == null)
                 {
                     Debug.LogError($"The font '{k_FontPath}' could not be loaded.");
                     Utility.Quit(3);
@@ -101,25 +101,25 @@ namespace CommandTerminal
 
         void SetupWindow()
         {
-            real_window_size = Screen.height * TerminalSettings.MaxHeight / 3;
+            real_window_size = Screen.height * Settings.MaxHeight / 3;
             window = new Rect(0, current_open_t - real_window_size, Screen.width, real_window_size);
 
             Texture2D background_texture = new Texture2D(1, 1);
-            background_texture.SetPixel(0, 0, TerminalSettings.BackgroundColor);
+            background_texture.SetPixel(0, 0, Settings.BackgroundColor);
             background_texture.Apply();
 
             window_style = new GUIStyle();
             window_style.normal.background = background_texture;
             window_style.padding = new RectOffset(4, 4, 4, 4);
-            window_style.normal.textColor = TerminalSettings.ForegroundColor;
-            window_style.font = TerminalSettings.ConsoleFont;
+            window_style.normal.textColor = Settings.ForegroundColor;
+            window_style.font = Settings.ConsoleFont;
         }
 
         void SetupLabels()
         {
             label_style = new GUIStyle();
-            label_style.font = TerminalSettings.ConsoleFont;
-            label_style.normal.textColor = TerminalSettings.ForegroundColor;
+            label_style.font = Settings.ConsoleFont;
+            label_style.normal.textColor = Settings.ForegroundColor;
             label_style.wordWrap = true;
         }
 
@@ -127,14 +127,14 @@ namespace CommandTerminal
         {
             input_style = new GUIStyle();
             input_style.padding = new RectOffset(4, 4, 4, 4);
-            input_style.font = TerminalSettings.ConsoleFont;
-            input_style.fixedHeight = TerminalSettings.ConsoleFont.fontSize * 1.6f;
-            input_style.normal.textColor = TerminalSettings.InputColor;
+            input_style.font = Settings.ConsoleFont;
+            input_style.fixedHeight = Settings.ConsoleFont.fontSize * 1.6f;
+            input_style.normal.textColor = Settings.InputColor;
 
             var dark_background = new Color();
-            dark_background.r = TerminalSettings.BackgroundColor.r - TerminalSettings.InputContrast;
-            dark_background.g = TerminalSettings.BackgroundColor.g - TerminalSettings.InputContrast;
-            dark_background.b = TerminalSettings.BackgroundColor.b - TerminalSettings.InputContrast;
+            dark_background.r = Settings.BackgroundColor.r - Settings.InputContrast;
+            dark_background.g = Settings.BackgroundColor.g - Settings.InputContrast;
+            dark_background.b = Settings.BackgroundColor.b - Settings.InputContrast;
             dark_background.a = 0.5f;
 
             Texture2D input_background_texture = new Texture2D(1, 1);
@@ -199,7 +199,7 @@ namespace CommandTerminal
         void DrawCommandTextField()
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label(TerminalSettings.InputCaret, input_style, GUILayout.Width(TerminalSettings.ConsoleFont.fontSize));
+            GUILayout.Label(Settings.InputCaret, input_style, GUILayout.Width(Settings.ConsoleFont.fontSize));
             GUI.SetNextControlName(k_CommandTextInput);
             command_text = GUILayout.TextField(command_text, input_style);
             CheckInputFix();
@@ -243,14 +243,14 @@ namespace CommandTerminal
         {
             foreach (var log in Buffer.Logs)
             {
-                label_style.normal.textColor = TerminalUtils.GetLogColor(TerminalSettings, log.type);
+                label_style.normal.textColor = TerminalUtils.GetLogColor(Settings, log.type);
                 GUILayout.Label(log.message, label_style);
             }
         }
 
         void HandleOpenness()
         {
-            float dt = TerminalSettings.ToggleSpeed * Time.deltaTime;
+            float dt = Settings.ToggleSpeed * Time.deltaTime;
 
             if (current_open_t < open_target)
             {
@@ -387,7 +387,7 @@ namespace CommandTerminal
 
         private void OpenTerminalSmall()
         {
-            open_target = Screen.height * TerminalSettings.MaxHeight * TerminalSettings.SmallTerminalRatio;
+            open_target = Screen.height * Settings.MaxHeight * Settings.SmallTerminalRatio;
             if (current_open_t > open_target)
             {
                 CloseTerminal();
@@ -399,7 +399,7 @@ namespace CommandTerminal
 
         private void OpenTerminalFull()
         {
-            real_window_size = Screen.height * TerminalSettings.MaxHeight;
+            real_window_size = Screen.height * Settings.MaxHeight;
             open_target = real_window_size;
         }
 

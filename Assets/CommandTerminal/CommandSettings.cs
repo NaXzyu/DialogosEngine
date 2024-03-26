@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CommandTerminal
 {
-    public class TerminalSettings
+    public class CommandSettings
     {
         public float MaxHeight { get; set; } = 1f;
         public float SmallTerminalRatio { get; set; } = 0.33f;
