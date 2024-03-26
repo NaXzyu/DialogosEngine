@@ -68,8 +68,8 @@ public class Commands
                     _data.Action = (CommandArg[] args) => _methodInfo.Invoke(null, new object[] { args });
                     _data.HelpText = _data.Args[3].String;
 
+                    Terminal.Instance.Log("[CMDS] Registering: \"" + _commandName.ToUpper() + "\"");
                     Terminal.Instance.Shell.AddCommand(_commandName.ToUpper(), _data);
-                    Terminal.Instance.Log("Registered Command: \"" + _commandName.ToUpper() + "\"");
                 }
                 else
                 {

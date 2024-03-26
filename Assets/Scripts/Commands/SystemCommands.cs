@@ -16,7 +16,7 @@ namespace CommandTerminal
 
                 if (Terminal.Instance != null)
                 {
-                    CommandData _commandData = new CommandData
+                    CommandData _data = new CommandData
                     {
                         Name = _name,
                         MinArgs = _minArgs,
@@ -24,7 +24,7 @@ namespace CommandTerminal
                         HelpText = _helpText
                     };
 
-                    Terminal.Instance.TerminalCommands.Register(_commandData);
+                    Terminal.Instance.TerminalCommands.Register(_data);
                 }
                 else
                 {

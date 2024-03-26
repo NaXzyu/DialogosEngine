@@ -16,11 +16,11 @@ public class Bootstrap : MonoBehaviour
 
     private void Start()
     {
-        InitializeTerminal();
-        LoadBootstrapFile();
+        Initialize();
+        LoadBootstrap();
     }
 
-    private void InitializeTerminal()
+    private void Initialize()
     {
         Terminal.Instance = FindFirstObjectByType<Terminal>();
         if (Terminal.Instance == null)
@@ -31,29 +31,21 @@ public class Bootstrap : MonoBehaviour
         Terminal.Instance.ToggleCommandInput(false);
     }
 
-    private void LoadBootstrapFile()
+    private void LoadBootstrap()
     {
         Terminal.Instance.Log("[BOOT] Attempting to load bootstrap file...");
         BootFile = Resources.Load<TextAsset>(k_Bootstrap);
 
         if (BootFile == null)
         {
-            Terminal.Instance.LogError("[BOOT] ERROR: Bootstrap file missing, unable to boot.");
-            StartCoroutine(WaitAndQuit());
+            Terminal.Instance.LogError("[BOOT] ERROR: Bootstrap file missing, unable to boot. Quit.");
+            Utility.Quit(3);
         }
         else
         {
             Terminal.Instance.Log("[BOOT] Bootstrap file loaded successfully.");
             StartCoroutine(BootSequence());
         }
-    }
-
-    IEnumerator WaitAndQuit()
-    {
-        Terminal.Instance.Log("[BOOT] Waiting 3 seconds before quitting...");
-        yield return new WaitForSeconds(3);
-        Terminal.Instance.Log("[BOOT] Quitting application");
-        Utility.Quit(3);
     }
 
     IEnumerator BootSequence()
