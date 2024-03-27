@@ -18,7 +18,7 @@ namespace DialogosEngine
                 try
                 {
                     Process _process = new();
-                    string _path = Application.dataPath + batchFile;
+                    string _path = Application.streamingAssetsPath + batchFile;
                     _process.StartInfo.FileName = _path;
                     _process.StartInfo.UseShellExecute = false;
                     _process.StartInfo.RedirectStandardOutput = true;
