@@ -18,8 +18,9 @@ set BUILD_DIR=%ROOT%Builds\Client_Win64\
 set UNITY_HUB_CLI="C:\Program Files\Unity Hub\Unity Hub.exe" -- --headless
 set UNITY_VERSION=2023.2.15f1
 set UNITY_DIR=
+set UNITY_EXE=Unity.exe
 set UNITY_LOG_PATH=%ROOT%Logs\BuildLog-Client-Win64.txt
-set UNITY_CMD=-quit -batchmode -nographics -buildTarget Win64 -projectPath "%ROOT%" -executeMethod BuildCommand.PerformBuild -logFile "%UNITY_LOG_PATH%" -buildOutput "%BUILD_DIR%"
+set UNITY_CMD=-quit -batchmode -nographics -buildTarget Win64 -projectPath "%ROOT%" -executeMethod BuildCommand.PerformBuild -buildOutput "%BUILD_DIR%"
 echo [INFO] Variables set.
 goto :eof
 
@@ -48,8 +49,8 @@ goto :eof
 :build_project
 echo [INFO] Starting the build process...
 echo [INFO] Using Unity path: %UNITY_PATH%
-echo [INFO] Build command: "%UNITY_PATH%" %UNITY_CMD% -buildOutput "%BUILD_DIR%"
-"%UNITY_PATH%" %UNITY_CMD% -buildOutput "%BUILD_DIR%"
+echo [INFO] Build command: "%UNITY_PATH%" %UNITY_CMD%
+"%UNITY_PATH%" %UNITY_CMD%
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] Build failed with error code %ERRORLEVEL%.
     exit /b %ERRORLEVEL%

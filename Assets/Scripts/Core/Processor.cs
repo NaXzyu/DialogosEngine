@@ -1,7 +1,6 @@
-using UnityEngine;
 using System.Diagnostics;
 using System.Threading;
-using CommandTerminal;
+using UnityEngine;
 
 namespace DialogosEngine
 {

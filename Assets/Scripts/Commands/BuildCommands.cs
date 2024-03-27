@@ -6,6 +6,7 @@ namespace CommandTerminal
     public static class BuildCommands
     {
         public const int k_ExpectedArgs = 0;
+        public const string k_BinBuildBatchFile = "/Bin/Build.bat";
 
         [Command("build")]
         public static void BuildCommand(CommandArg[] args)
@@ -15,7 +16,7 @@ namespace CommandTerminal
                 Terminal.Instance.Log("[BULD] Starting build process...");
                 bool hasCompileErrors = false;
 
-                Processor.ExecuteBatchFile("/StreamingAssets/Build.bat");
+                Processor.ExecuteBatchFile(k_BinBuildBatchFile);
 
                 if (hasCompileErrors)
                 {
