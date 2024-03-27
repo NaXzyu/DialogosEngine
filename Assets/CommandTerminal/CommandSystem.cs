@@ -26,11 +26,11 @@ public class CommandSystem
     {
         while (logQueue.TryDequeue(out string message))
         {
-            Terminal.Instance.Log("[PROC] " + message);
+            Terminal.Instance.Log(message);
         }
         while (errorQueue.TryDequeue(out string message))
         {
-            Terminal.Instance.LogError("[PROC] " + message);
+            Terminal.Instance.LogError(message);
         }
         while (commandQueue.TryDequeue(out CommandArg[] commandArgs))
         {
