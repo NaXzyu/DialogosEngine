@@ -84,7 +84,7 @@ namespace DialogosEngine
         private void PrintLinesFromTextAsset(TextAsset asset, string prefix)
         {
             string[] _lines = asset.text.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries);
-            Terminal.Instance.Buffer.Clear();
+            Terminal.Instance.Buffer.ArchiveLogs();
             foreach (string _line in _lines)
             {
                 if (!_line.Trim().StartsWith("#") && !string.IsNullOrWhiteSpace(_line))
@@ -96,7 +96,7 @@ namespace DialogosEngine
 
         private void FinalizeBoot()
         {
-            if (_clearPostBoot) Terminal.Instance.Buffer.Clear();
+            if (_clearPostBoot) Terminal.Instance.Buffer.ArchiveLogs();
             Terminal.Instance.ToggleCommandInput(true);
         }
 

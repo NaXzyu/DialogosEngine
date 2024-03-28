@@ -24,7 +24,7 @@ namespace CommandTerminal
 
         public Commands Commands { get; private set; }
         public CommandSettings Settings { get; private set; }
-        public CommandLog Buffer { get; private set; }
+        public CommandBuffer Buffer { get; private set; }
         public CommandShell Shell { get; private set; }
         public CommandHistory History { get; private set; }
         public CommandAutocomplete Autocomplete { get; private set; }
@@ -43,7 +43,7 @@ namespace CommandTerminal
         {
             Settings = new CommandSettings();
             Commands = new Commands();
-            Buffer = new CommandLog(Settings.BufferSize);
+            Buffer = new CommandBuffer(Settings.BufferSize);
             Shell = new CommandShell();
             History = new CommandHistory();
             Autocomplete = new CommandAutocomplete();
@@ -262,7 +262,7 @@ namespace CommandTerminal
         public void Log(LogType type, string message, params object[] args)
         {
             string formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
-            Buffer.Handle(formattedMessage, type);
+            Buffer.Append(formattedMessage, type);
             _scrollToBottom = true;
         }
         public void LogWarning(string message)
