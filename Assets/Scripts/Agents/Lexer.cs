@@ -2,9 +2,9 @@ using System;
 
 namespace DialogosEngine
 {
-    public class Lexer
+    public static class Lexer
     {
-        public float[] Transform(string line)
+        public static float[] Transform(string line)
         {
             try
             {
@@ -23,7 +23,7 @@ namespace DialogosEngine
             }
         }
 
-        private bool Process(ref int @byte, ref int @float, byte[] bytes, float[] vector)
+        private static bool Process(ref int @byte, ref int @float, byte[] bytes, float[] vector)
         {
             if (@byte >= bytes.Length) return false;
 

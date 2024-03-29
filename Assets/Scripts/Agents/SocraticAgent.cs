@@ -1,5 +1,4 @@
 using CommandTerminal;
-using System;
 using System.Collections.Generic;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
@@ -10,20 +9,20 @@ namespace DialogosEngine
 {
     public class SocraticAgent : Agent
     {
+        SocraticBrain _Brain;
         ParallelStateMachine _PSM;
-        Lexer _Lexer;
         Dictionary<IState, float> _Rewards = new Dictionary<IState, float>();
         int _BufferOffset = 0;
 
         public override void Initialize()
         {
+            _Brain = new(this);
             _PSM = new(this);
             _PSM.AddState("Observe", new ObserveState(), 1.0f, 0.1f);
             _PSM.AddState("Orient", new OrientState(), 1.0f, 0.1f);
             _PSM.AddState("Decide", new DecideState(), 1.0f, 0.1f);
             _PSM.AddState("Act", new ActState(), 1.0f, 0.1f);
             _PSM.AddState("Learn", new LearnState(), 1.0f, 0.1f);
-            _Lexer = new();
         }
 
         public override void OnEpisodeBegin()
@@ -47,7 +46,7 @@ namespace DialogosEngine
         {
             foreach (string line in buffer)
             {
-                float[] vector = _Lexer.Transform(line);
+                float[] vector = Lexer.Transform(line);
                 foreach (var f in vector)
                 {
                     sensor.AddObservation(f);
