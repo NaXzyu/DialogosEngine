@@ -1,5 +1,7 @@
 using CommandTerminal;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
@@ -13,6 +15,7 @@ namespace DialogosEngine
         ParallelStateMachine _PSM;
         Dictionary<IState, float> _Rewards = new Dictionary<IState, float>();
         int _BufferOffset = 0;
+        int _ObservationSize = 1000;
 
         public override void Initialize()
         {
@@ -27,31 +30,36 @@ namespace DialogosEngine
 
         public override void OnEpisodeBegin()
         {
-            ResetEnvironment();
-            _PSM.Reset();
-        }
-
-        private void ResetEnvironment()
-        {
             Terminal.Instance.Buffer.Reset();
+            _PSM.Reset();
         }
 
         public override void CollectObservations(VectorSensor sensor)
         {
-            string[] _buffer = Terminal.Instance.Buffer.ToArray(_BufferOffset, 1000);
-            ObserveBuffer(_buffer, sensor);
+            string[] _text = Terminal.Instance.Buffer.ToArray(_BufferOffset, _ObservationSize);
+            Observe(_text, sensor);
         }
 
-        private void ObserveBuffer(string[] buffer, VectorSensor sensor)
+        private void Observe(string[] text, VectorSensor sensor)
         {
-            foreach (string line in buffer)
+            int _size = 0;
+            foreach (string _line in text)
             {
-                float[] vector = Lexer.Transform(line);
-                foreach (var f in vector)
+                _size += _line.Length;
+                float[] _vector = Lexer.Transform(_line);
+                foreach (var _float in _vector)
                 {
-                    sensor.AddObservation(f);
+                    sensor.AddObservation(_float);
                 }
             }
+            sensor.AddObservation(Lexer.CreateQuaternion(text, _size));
+            sensor.AddObservation(GetTimestamp());
+        }
+
+        private float GetTimestamp()
+        {
+            long _timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            return (float)(_timestamp % 1e6) / 1e6f; // Normalize
         }
 
         public override void OnActionReceived(ActionBuffers actionBuffers)
@@ -72,20 +80,20 @@ namespace DialogosEngine
 
         public void ApplyCombinedReward()
         {
-            float combinedReward = CalculateCombinedReward();
-            SetReward(combinedReward);
+            float _combinedReward = CalculateCombinedReward();
+            SetReward(_combinedReward);
         }
 
         public float CalculateCombinedReward()
         {
-            float combinedReward = 0f;
-            foreach (var reward in _Rewards.Values)
+            float _combinedReward = 0f;
+            foreach (var _reward in _Rewards.Values)
             {
-                float sigmoidReward = 2f / (1f + Mathf.Exp(-reward)) - 1f;
-                combinedReward += sigmoidReward;
+                float _sigmoidReward = 2f / (1f + Mathf.Exp(-_reward)) - 1f;
+                _combinedReward += _sigmoidReward;
             }
-            combinedReward = Mathf.Clamp(combinedReward / _Rewards.Count, -1f, 1f);
-            return combinedReward;
+            _combinedReward = Mathf.Clamp(_combinedReward / _Rewards.Count, -1f, 1f);
+            return _combinedReward;
         }
 
         public void SetBufferOffset(int offsetAmount)
