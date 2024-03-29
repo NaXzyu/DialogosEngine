@@ -70,7 +70,7 @@ namespace CommandTerminal
             _Logs.Clear();
         }
 
-        public string[] ToArray(int startOffset, int maxChars)
+        public string[] ToArray(ref int startOffset, ref int maxChars)
         {
             List<string> _lines = new();
             int _count = 0;

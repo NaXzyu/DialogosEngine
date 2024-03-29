@@ -1,7 +1,6 @@
 using CommandTerminal;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
@@ -26,6 +25,7 @@ namespace DialogosEngine
             _PSM.AddState("Decide", new DecideState(), 1.0f, 0.1f);
             _PSM.AddState("Act", new ActState(), 1.0f, 0.1f);
             _PSM.AddState("Learn", new LearnState(), 1.0f, 0.1f);
+            Lexer.Reset();
         }
 
         public override void OnEpisodeBegin()
@@ -36,23 +36,51 @@ namespace DialogosEngine
 
         public override void CollectObservations(VectorSensor sensor)
         {
-            string[] _text = Terminal.Instance.Buffer.ToArray(_BufferOffset, _ObservationSize);
-            Observe(_text, sensor);
+            string[] _text = Terminal.Instance.Buffer.ToArray(ref _BufferOffset, ref _ObservationSize);
+            int _size = 0;
+            CollectTextObservations(_text, sensor, ref _size, ref _ObservationSize);
+            CollectedContextObservations(sensor, _text, ref _size);
         }
 
-        private void Observe(string[] text, VectorSensor sensor)
+        private bool ShouldAddObservation(ref int totalAdded, ref int maxObservations, ref int textIndex, int textLength)
         {
-            int _size = 0;
-            foreach (string _line in text)
+            return totalAdded < maxObservations && textIndex < textLength;
+        }
+
+        private void CollectTextObservations(string[] text, VectorSensor sensor, ref int size, ref int maxObservations)
+        {
+            int _totalAdded = 0;
+            int _textIndex = 0;
+            int _vectorIndex = 0;
+            float[] _vector = null;
+
+            while (ShouldAddObservation(ref _totalAdded, ref maxObservations, ref _textIndex, text.Length))
             {
-                _size += _line.Length;
-                float[] _vector = Lexer.Transform(_line);
-                foreach (var _float in _vector)
+                if (_vector == null || _vectorIndex >= _vector.Length)
                 {
-                    sensor.AddObservation(_float);
+                    size += text[_textIndex].Length;
+                    _vector = Lexer.Vectorize(text[_textIndex]);
+                    _vectorIndex = 0;
+                    _textIndex++;
+                }
+
+                if (_vectorIndex < _vector.Length)
+                {
+                    sensor.AddObservation(_vector[_vectorIndex]);
+                    _vectorIndex++;
+                    _totalAdded++;
                 }
             }
-            sensor.AddObservation(Lexer.CreateQuaternion(text, _size));
+
+            if (_totalAdded >= maxObservations)
+            {
+                Debug.LogWarning("Maximum number of text sensors exceeded.");
+            }
+        }
+
+        private void CollectedContextObservations(VectorSensor sensor, string[] text, ref int size)
+        {
+            sensor.AddObservation(Lexer.CreateQuaternion(text, size));
             sensor.AddObservation(GetTimestamp());
         }
 

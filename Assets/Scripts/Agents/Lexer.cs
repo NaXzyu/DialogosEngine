@@ -7,7 +7,10 @@ namespace DialogosEngine
 {
     public static class Lexer
     {
-        public static float[] Transform(string line)
+        private static bool _isLittleEndian;
+        public static bool IsLittleEndian => _isLittleEndian;
+
+        public static float[] Vectorize(string line)
         {
             try
             {
@@ -26,25 +29,39 @@ namespace DialogosEngine
             }
         }
 
-        private static bool Process(ref int @byte, ref int @float, byte[] bytes, float[] vector)
+        public static bool Process(ref int byteIndex, ref int floatIndex, byte[] bytes, float[] vector)
         {
-            if (@byte >= bytes.Length) return false;
+            if (byteIndex >= bytes.Length) return false;
 
-            int _value = 0;
-            while (@byte < bytes.Length && @float < vector.Length * 4)
+            return ProcessBytesToFloats(ref byteIndex, ref floatIndex, bytes, vector);
+        }
+
+        private static bool ProcessBytesToFloats(ref int byteIndex, ref int floatIndex, byte[] bytes, float[] vector)
+        {
+            while (byteIndex < bytes.Length && floatIndex < vector.Length)
             {
-                _value |= bytes[@byte++] << ((@byte % 4) * 8);
-                if ((@byte % 4) == 0 || @byte == bytes.Length)
-                {
-                    unsafe
-                    {
-                        float* _ptr = (float*)&_value;
-                        vector[@float++] = *_ptr;
-                    }
-                    _value = 0;
-                }
+                vector[floatIndex++] = ConvertBytesToSingle(ref byteIndex, bytes);
             }
-            return @byte < bytes.Length;
+            return byteIndex < bytes.Length;
+        }
+
+        private static byte[] GetNextBytes(ref int byteIndex, byte[] bytes)
+        {
+            byte[] _bytes = new byte[4];
+            int _bytesToCopy = Math.Min(4, bytes.Length - byteIndex);
+            Array.Copy(bytes, byteIndex, _bytes, 0, _bytesToCopy);
+            byteIndex += _bytesToCopy;
+            return _bytes;
+        }
+
+        private static float ConvertBytesToSingle(ref int byteIndex, byte[] bytes)
+        {
+            byte[] _bytes = GetNextBytes(ref byteIndex, bytes);
+            if (!IsLittleEndian)
+            {
+                Array.Reverse(_bytes);
+            }
+            return BitConverter.ToSingle(_bytes, 0);
         }
 
         public static float CalculateWhitespace(string[] text)
@@ -111,6 +128,18 @@ namespace DialogosEngine
             _quaternion.Normalize();
 
             return _quaternion;
+        }
+
+        public static bool CheckEndianness()
+        {
+            ushort _testNumber = 0x1234;
+            byte[] _testBytes = BitConverter.GetBytes(_testNumber);
+            return _testBytes[0] == 0x34;
+        }
+
+        public static void Reset()
+        {
+            _isLittleEndian = CheckEndianness();
         }
     }
 }
