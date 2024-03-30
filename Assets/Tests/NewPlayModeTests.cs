@@ -1,25 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using NUnit.Framework;
-using UnityEngine;
+using System.Collections;
 using UnityEngine.TestTools;
 
-public class NewPlayModeTests
+namespace DialogosEngine.Tests
 {
-    // A Test behaves as an ordinary method
-    [Test]
-    public void NewPlayModeTestsSimplePasses()
+    public class NewPlayModeTests
     {
-        // Use the Assert class to test conditions
-    }
+        [Test]
+        public void NewPlayModeTestsSimplePasses()
+        {
+            // TODO Use the Assert class to test conditions
+        }
 
-    // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
-    // `yield return null;` to skip a frame.
-    [UnityTest]
-    public IEnumerator NewPlayModeTestsWithEnumeratorPasses()
-    {
-        // Use the Assert class to test conditions.
-        // Use yield to skip a frame.
-        yield return null;
+        [UnityTest]
+        public IEnumerator NewPlayModeTestsWithEnumeratorPasses()
+        {
+            // TODO Use the Assert class to test conditions.
+            yield return null;
+        }
     }
 }
