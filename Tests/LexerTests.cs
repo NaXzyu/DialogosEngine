@@ -19,8 +19,8 @@ namespace DialogosEngine.Tests
             TestContext.WriteLine($"Resulting float array: {Utility.FormatFloatArray(result)}");
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.IsEmpty(result);
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.Empty);
             TestContext.WriteLine($"Test passed: Empty input string returns an empty float array.");
         }
 
@@ -36,8 +36,8 @@ namespace DialogosEngine.Tests
             TestContext.WriteLine($"Resulting float array: {Utility.FormatFloatArray(result)}");
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.That(result.Length, Is.EqualTo(1));
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Has.Length.EqualTo(1));
             TestContext.WriteLine($"Test passed: Input string 'Test' converts to a float array with length 1.");
         }
 
@@ -57,7 +57,7 @@ namespace DialogosEngine.Tests
         public static void Vectorize_GivenNullInput_ThrowsLexerException()
         {
             // Arrange
-            string input = null;
+            string? input = null;
             TestContext.WriteLine($"Testing with null input string.");
 
             // Act & Assert
@@ -77,6 +77,24 @@ namespace DialogosEngine.Tests
             var ex = Assert.Throws<LexerException>(() => Lexer.Vectorize(input));
             Assert.That(ex.Message, Is.EqualTo($"Input exceeds the maximum length of {Lexer.k_MaxChars} characters."));
             TestContext.WriteLine($"Test passed: Input string exceeding max characters throws LexerException.");
+        }
+
+        [Test]
+        public static void Vectorize_GivenSingleCharacter_ConvertsToFloat()
+        {
+            // Arrange
+            var input = "T";
+            TestContext.WriteLine($"Testing with single character input: '{input}'.");
+
+            // Act
+            var result = Lexer.Vectorize(input);
+            TestContext.WriteLine($"Resulting float array: {Utility.FormatFloatArray(result)}");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Has.Length.EqualTo(1));
+            Assert.That(result[0], Is.EqualTo((float)input[0]));
+            TestContext.WriteLine($"Test passed: Single character input 'T' converts to a float array with correct value.");
         }
     }
 }
