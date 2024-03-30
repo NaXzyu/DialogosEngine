@@ -80,21 +80,67 @@ namespace DialogosEngine.Tests
         }
 
         [Test]
-        public static void Vectorize_GivenSingleCharacter_ConvertsToFloat()
+        public static void VectorizeNew_GivenString_ConvertsToAsciiFloatArray()
         {
             // Arrange
-            var input = "T";
-            TestContext.WriteLine($"Testing with single character input: '{input}'.");
+            string input = "Test";
+            TestContext.WriteLine($"Testing with input string: '{input}'.");
+
+            // Expected packed values need to be calculated based on the packing logic used in VectorizeNew
+            // For the sake of this example, let's assume the packing logic results in these values
+            // ASCII values for 'T', 'e', 's', 't' { 84, 101, 115, 116 }
+            var expected = new float[] { 0.084101115f, 0.116f }; 
 
             // Act
-            var result = Lexer.Vectorize(input);
+            float[] result = Lexer.VectorizeNew(input);
             TestContext.WriteLine($"Resulting float array: {Utility.FormatFloatArray(result)}");
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result, Has.Length.EqualTo(1));
-            Assert.That(result[0], Is.EqualTo((float)input[0]));
-            TestContext.WriteLine($"Test passed: Single character input 'T' converts to a float array with correct value.");
+            Assert.IsNotNull(result);
+            Assert.That(result.Length, Is.EqualTo(expected.Length), "The length of the result array should match the expected array.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(result[i], Is.EqualTo(expected[i]), $"The packed value at index {i} should match the expected value.");
+            }
+            TestContext.WriteLine($"Test passed: Input string '{input}' converts to expected packed float array.");
+        }
+
+
+        [Test]
+        public static void VectorizeNew_GivenEmptyString_ReturnsEmptyFloatArray()
+        {
+            // Arrange
+            var input = string.Empty;
+            var expected = new float[] { };
+
+            // Act
+            var result = Lexer.VectorizeNew(input);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.That(result.Length, Is.EqualTo(expected.Length), "The result array should be empty for an empty input string.");
+        }
+
+        [Test]
+        public static void VectorizeNew_GivenNull_ThrowsArgumentNullException()
+        {
+            // Arrange
+            string input = null;
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentNullException>(() => Lexer.VectorizeNew(input));
+            Assert.That(ex.ParamName, Is.EqualTo("line"), "The exception should be thrown for a null input string.");
+        }
+
+        [Test]
+        public static void VectorizeNew_GivenStringExceedingMaxChars_ThrowsLexerException()
+        {
+            // Arrange
+            var input = new string('a', Lexer.k_MaxChars + 1);
+
+            // Act & Assert
+            var ex = Assert.Throws<LexerException>(() => Lexer.VectorizeNew(input));
+            Assert.That(ex.Message, Is.EqualTo($"Input exceeds the maximum length of {Lexer.k_MaxChars} characters."), "The exception should be thrown for input exceeding the maximum character limit.");
         }
     }
 }

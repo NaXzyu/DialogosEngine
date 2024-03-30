@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -10,6 +11,68 @@ namespace DialogosEngine
         public const int k_MaxChars = 1000;
         private static bool _isLittleEndian;
         public static bool IsLittleEndian => _isLittleEndian;
+
+        public static float[] VectorizeNew(string line, int charsPerFloat = 3)
+        {
+            if (line == null)
+            {
+                throw new ArgumentNullException(nameof(line), "Input string cannot be null.");
+            }
+
+            if (line.Length > k_MaxChars)
+            {
+                throw new LexerException($"Input exceeds the maximum length of {k_MaxChars} characters.");
+            }
+
+            // Define a path for the log file on the desktop
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string logFilePath = Path.Combine(desktopPath, "VectorizeNew.log");
+
+            // Helper method to log messages to a file
+            void LogToFile(string message)
+            {
+                File.AppendAllText(logFilePath, $"{DateTime.Now}: {message}\n");
+            }
+
+            // Calculate the size of the vector based on the number of characters per float
+            int vectorSize = (int)Math.Ceiling((double)line.Length / charsPerFloat);
+            float[] vector = new float[vectorSize];
+
+            // Log the initial values
+            LogToFile($"Vectorizing string: {line}");
+            LogToFile($"charsPerFloat: {charsPerFloat}");
+            LogToFile($"Resulting array size: {vector.Length}");
+
+            for (int i = 0, j = 0; i < line.Length; i += charsPerFloat, j++)
+            {
+                int packedValue = 0;
+
+                // Log the current state before packing
+                LogToFile($"Current line index: {i}");
+                LogToFile($"Current array index: {j}");
+
+                // Pack characters into the integer
+                for (int k = 0; k < charsPerFloat && (i + k) < line.Length; k++)
+                {
+                    LogToFile($"Packing char '{line[i + k]}' (ASCII: {(int)line[i + k]}) at bit position: {(k * 8)}");
+
+                    packedValue |= line[i + k] << (k * 8);
+                    
+                    LogToFile($"Packed value: {packedValue}");
+                }
+
+                // Convert the packed integer to a float
+                vector[j] = BitConverter.ToSingle(BitConverter.GetBytes(packedValue), 0);
+
+                // Log the packed float value
+                LogToFile($"Packed float at index {j}: {vector[j]}");
+            }
+
+            // Log the final float array
+            LogToFile($"Final float array: {string.Join(", ", vector)}");
+
+            return vector;
+        }
 
         public static float[] Vectorize(string line)
         {
