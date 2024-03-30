@@ -7,11 +7,18 @@ namespace DialogosEngine
 {
     public static class Lexer
     {
+        public const int k_MaxChars = 1000;
         private static bool _isLittleEndian;
         public static bool IsLittleEndian => _isLittleEndian;
 
         public static float[] Vectorize(string line)
         {
+
+            if (line != null && line.Length > k_MaxChars)
+            {
+                throw new LexerException($"Input exceeds the maximum length of {k_MaxChars} characters.");
+            }
+
             try
             {
                 byte[] _bytes = System.Text.Encoding.ASCII.GetBytes(line);
@@ -28,6 +35,7 @@ namespace DialogosEngine
                 throw new LexerException("An error occurred while processing", ex);
             }
         }
+
 
         public static bool Process(ref int byteIndex, ref int floatIndex, byte[] bytes, float[] vector)
         {
