@@ -12,127 +12,44 @@ namespace DialogosEngine
         private static bool _isLittleEndian;
         public static bool IsLittleEndian => _isLittleEndian;
 
-        public static float[] VectorizeNew(string line, int charsPerFloat = 3)
+        public static float[] Vectorize(string line, int charsPerFloat = 2)
         {
             if (line == null)
             {
                 throw new ArgumentNullException(nameof(line), "Input string cannot be null.");
             }
-
             if (line.Length > k_MaxChars)
             {
                 throw new LexerException($"Input exceeds the maximum length of {k_MaxChars} characters.");
             }
 
-            // Define a path for the log file on the desktop
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string logFilePath = Path.Combine(desktopPath, "VectorizeNew.log");
+            // Pre-calculate powers of 10
+            double[] powersOfTen = Enumerable.Range(0, charsPerFloat).Select(x => Math.Pow(10, 3 * x)).ToArray();
 
-            // Helper method to log messages to a file
-            void LogToFile(string message)
-            {
-                File.AppendAllText(logFilePath, $"{DateTime.Now}: {message}\n");
-            }
-
-            // Calculate the size of the vector based on the number of characters per float
+            // Calculate the size of the vector
             int vectorSize = (int)Math.Ceiling((double)line.Length / charsPerFloat);
             float[] vector = new float[vectorSize];
 
-            // Log the initial values
-            LogToFile($"Vectorizing string: {line}");
-            LogToFile($"charsPerFloat: {charsPerFloat}");
-            LogToFile($"Resulting array size: {vector.Length}");
+            // Define a multiplier based on the precision of a float
+            const float multiplier = 0.000001f; // Adjusted for six digits of precision
 
             for (int i = 0, j = 0; i < line.Length; i += charsPerFloat, j++)
             {
-                int packedValue = 0;
+                double packedValue = 0;
 
-                // Log the current state before packing
-                LogToFile($"Current line index: {i}");
-                LogToFile($"Current array index: {j}");
-
-                // Pack characters into the integer
                 for (int k = 0; k < charsPerFloat && (i + k) < line.Length; k++)
                 {
-                    LogToFile($"Packing char '{line[i + k]}' (ASCII: {(int)line[i + k]}) at bit position: {(k * 8)}");
-
-                    packedValue |= line[i + k] << (k * 8);
-                    
-                    LogToFile($"Packed value: {packedValue}");
+                    char character = line[i + k];
+                    int asciiValue = character;
+                    // Use pre-calculated power of 10
+                    packedValue += asciiValue * powersOfTen[charsPerFloat - k - 1];
                 }
 
-                // Convert the packed integer to a float
-                vector[j] = BitConverter.ToSingle(BitConverter.GetBytes(packedValue), 0);
-
-                // Log the packed float value
-                LogToFile($"Packed float at index {j}: {vector[j]}");
+                // Multiply by the fixed multiplier to shift the decimal point
+                vector[j] = (float)(packedValue * multiplier);
             }
-
-            // Log the final float array
-            LogToFile($"Final float array: {string.Join(", ", vector)}");
 
             return vector;
-        }
-
-        public static float[] Vectorize(string line)
-        {
-
-            if (line != null && line.Length > k_MaxChars)
-            {
-                throw new LexerException($"Input exceeds the maximum length of {k_MaxChars} characters.");
-            }
-
-            try
-            {
-                byte[] _bytes = System.Text.Encoding.ASCII.GetBytes(line);
-                int _size = (int)Math.Ceiling(_bytes.Length / 4.0);
-                float[] _vector = new float[_size];
-                int _float = 0;
-                int _byte = 0;
-
-                while (Process(ref _byte, ref _float, _bytes, _vector)) ;
-                return _vector;
-            }
-            catch (Exception ex)
-            {
-                throw new LexerException("An error occurred while processing", ex);
-            }
-        }
-
-
-        public static bool Process(ref int byteIndex, ref int floatIndex, byte[] bytes, float[] vector)
-        {
-            if (byteIndex >= bytes.Length) return false;
-
-            return ProcessBytesToFloats(ref byteIndex, ref floatIndex, bytes, vector);
-        }
-
-        private static bool ProcessBytesToFloats(ref int byteIndex, ref int floatIndex, byte[] bytes, float[] vector)
-        {
-            while (byteIndex < bytes.Length && floatIndex < vector.Length)
-            {
-                vector[floatIndex++] = ConvertBytesToSingle(ref byteIndex, bytes);
-            }
-            return byteIndex < bytes.Length;
-        }
-
-        private static byte[] GetNextBytes(ref int byteIndex, byte[] bytes)
-        {
-            byte[] _bytes = new byte[4];
-            int _bytesToCopy = Math.Min(4, bytes.Length - byteIndex);
-            Array.Copy(bytes, byteIndex, _bytes, 0, _bytesToCopy);
-            byteIndex += _bytesToCopy;
-            return _bytes;
-        }
-
-        private static float ConvertBytesToSingle(ref int byteIndex, byte[] bytes)
-        {
-            byte[] _bytes = GetNextBytes(ref byteIndex, bytes);
-            if (!IsLittleEndian)
-            {
-                Array.Reverse(_bytes);
-            }
-            return BitConverter.ToSingle(_bytes, 0);
         }
 
         public static float CalculateWhitespace(string[] text)

@@ -4,7 +4,7 @@
     {
         public static string FormatFloatArray(float[] floatArray)
         {
-            return string.Join(", ", floatArray.Select(f => f.ToString("G29")));
+            return string.Join(", ", floatArray.Select(f => f.ToString("F6")));
         }
     }
 }
