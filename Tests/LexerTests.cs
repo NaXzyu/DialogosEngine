@@ -1,4 +1,6 @@
-﻿namespace DialogosEngine.Tests
+﻿using System.Diagnostics;
+
+namespace DialogosEngine.Tests
 {
     [TestFixture]
     public static class LexerTests
@@ -85,6 +87,67 @@
 
             // Assert
             Assert.IsNotNull(result, "The result should not be null.");
+            Assert.That(result.Length, Is.EqualTo(expected.Length), "The length of the result array should match the expected array.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(result[i], Is.EqualTo(expected[i]), $"The packed value at index {i} should match the expected value.");
+            }
+            TestContext.WriteLine($"Test passed: Input string '{input}' converts to expected packed float array.");
+        }
+
+        [Test]
+        public static void Vectorize_GivenLongStringWithPunctuation_ConvertsToAsciiFloatArray()
+        {
+            // Arrange
+            string input = "The quick brown fox jumps over the lazy dog! Why? Because it can...";
+            TestContext.WriteLine($"Testing with input string: '{input}'.");
+
+            // Calculate expected values based on the packing logic used in Vectorize
+            // ASCII values for the input characters will be packed into float values
+            var expected = new float[] {
+                0.084104f, // 'Th'
+                0.101032f, // 'e '
+                0.113117f, // ' q'
+                0.117105f, // 'ui'
+                0.099107f, // 'ck'
+                0.032098f, // ' b'
+                0.114111f, // 'ro'
+                0.119110f, // 'wn'
+                0.032102f, // ' f'
+                0.111120f, // 'ox'
+                0.032106f, // ' j'
+                0.117109f, // 'um'
+                0.112115f, // 'ps'
+                0.032111f, // ' o'
+                0.118101f, // 've'
+                0.114032f, // 'r '
+                0.116104f, // 'th'
+                0.101032f, // 'e '
+                0.108097f, // 'la'
+                0.122121f, // 'zy'
+                0.032100f, // ' d'
+                0.111103f, // 'og'
+                0.033032f, // '! '
+                0.087104f, // 'Wh'
+                0.121063f, // 'y?'
+                0.032066f, // ' B'
+                0.101099f, // 'ec'
+                0.097117f, // 'au'
+                0.115101f, // 'se'
+                0.032105f, // ' i'
+                0.116032f, // 't '
+                0.099097f, // 'ca'
+                0.110046f, // 'n.'
+                0.046046f, // '..'
+                0.000046f  // '. '
+            };
+
+            // Act
+            float[] result = Lexer.Vectorize(input);
+            TestContext.WriteLine($"Resulting float array: {Utility.FormatFloatArray(result)}");
+
+            // Assert
+            Assert.IsNotNull(result);
             Assert.That(result.Length, Is.EqualTo(expected.Length), "The length of the result array should match the expected array.");
             for (int i = 0; i < expected.Length; i++)
             {
