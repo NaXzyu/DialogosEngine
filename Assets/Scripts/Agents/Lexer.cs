@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace DialogosEngine
@@ -9,10 +9,13 @@ namespace DialogosEngine
     public static class Lexer
     {
         public const int k_MaxChars = 1000;
+        public const int k_CharsPerFloat = 2;
         private static bool _isLittleEndian;
         public static bool IsLittleEndian => _isLittleEndian;
 
-        public static float[] Vectorize(string line, int charsPerFloat = 2)
+        public static float[] powersOfTen = Enumerable.Range(0, k_CharsPerFloat).Select(x => (float)Math.Pow(10, 3 * x)).ToArray();
+
+        public static float[] Vectorize(string line)
         {
             if (line == null)
             {
@@ -20,33 +23,29 @@ namespace DialogosEngine
             }
             if (line.Length > k_MaxChars)
             {
-                throw new LexerException($"Input exceeds the maximum length of {k_MaxChars} characters.");
+                var message = new StringBuilder("Input exceeds the maximum length of ")
+                    .Append(k_MaxChars)
+                    .Append(" characters.")
+                    .ToString();
+                throw new LexerException(message);
             }
 
-            // Pre-calculate powers of 10
-            double[] powersOfTen = Enumerable.Range(0, charsPerFloat).Select(x => Math.Pow(10, 3 * x)).ToArray();
-
-            // Calculate the size of the vector
-            int vectorSize = (int)Math.Ceiling((double)line.Length / charsPerFloat);
+            int vectorSize = (int)Math.Ceiling((float)line.Length / k_CharsPerFloat);
             float[] vector = new float[vectorSize];
+            const float multiplier = 0.000001f;
 
-            // Define a multiplier based on the precision of a float
-            const float multiplier = 0.000001f; // Adjusted for six digits of precision
-
-            for (int i = 0, j = 0; i < line.Length; i += charsPerFloat, j++)
+            for (int i = 0, j = 0; i < line.Length; i += k_CharsPerFloat, j++)
             {
-                double packedValue = 0;
+                float packedValue = 0;
+                int charsToProcess = Math.Min(k_CharsPerFloat, line.Length - i);
 
-                for (int k = 0; k < charsPerFloat && (i + k) < line.Length; k++)
+                for (int k = 0; k < charsToProcess; k++)
                 {
-                    char character = line[i + k];
-                    int asciiValue = character;
-                    // Use pre-calculated power of 10
-                    packedValue += asciiValue * powersOfTen[charsPerFloat - k - 1];
+                    // Inline ASCII conversion
+                    packedValue += (line[i + k] * powersOfTen[charsToProcess - k - 1]);
                 }
 
-                // Multiply by the fixed multiplier to shift the decimal point
-                vector[j] = (float)(packedValue * multiplier);
+                vector[j] = packedValue * multiplier;
             }
 
             return vector;

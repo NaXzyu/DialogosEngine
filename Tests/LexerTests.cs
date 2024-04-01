@@ -66,5 +66,31 @@
             var ex = Assert.Throws<LexerException>(() => Lexer.Vectorize(input));
             Assert.That(ex.Message, Is.EqualTo($"Input exceeds the maximum length of {Lexer.k_MaxChars} characters."), "The exception should be thrown for input exceeding the maximum character limit.");
         }
+
+        [Test]
+        public static void Vectorize_GivenStringWithSpecialChars_ConvertsToAsciiFloatArray()
+        {
+            // Arrange
+            string input = "T@st!";
+            TestContext.WriteLine($"Testing with input string: '{input}'.");
+
+            // Calculate expected values based on the packing logic used in Vectorize
+            // ASCII values for 'T', '@', 's', 't', '!' are 84, 64, 115, 116, 33
+            // Assuming charsPerFloat is 2, and considering the multiplier and precision
+            var expected = new float[] { 0.084064f, 0.115116f, 0.000033f };
+
+            // Act
+            float[] result = Lexer.Vectorize(input);
+            TestContext.WriteLine($"Resulting float array: {Utility.FormatFloatArray(result)}");
+
+            // Assert
+            Assert.IsNotNull(result, "The result should not be null.");
+            Assert.That(result.Length, Is.EqualTo(expected.Length), "The length of the result array should match the expected array.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(result[i], Is.EqualTo(expected[i]), $"The packed value at index {i} should match the expected value.");
+            }
+            TestContext.WriteLine($"Test passed: Input string '{input}' converts to expected packed float array.");
+        }
     }
 }
