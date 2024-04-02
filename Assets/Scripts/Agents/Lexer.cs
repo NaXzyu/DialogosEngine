@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 
 namespace DialogosEngine
@@ -23,7 +25,8 @@ namespace DialogosEngine
             }
             if (line.Length > k_MaxChars)
             {
-                var message = new StringBuilder("Input exceeds the maximum length of ")
+                var message = new StringBuilder(50)
+                    .Append("Input exceeds the maximum length of ")
                     .Append(k_MaxChars)
                     .Append(" characters.")
                     .ToString();
@@ -46,6 +49,42 @@ namespace DialogosEngine
                 }
 
                 vector[j] = packedValue * multiplier;
+            }
+
+            return vector;
+        }
+
+        public static float[] VectorizeUTF8(string line)
+        {
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string logFilePath = Path.Combine(desktopPath, "VectorizeUTF8Log.txt");
+
+            if (line == null)
+            {
+                throw new ArgumentNullException(nameof(line), "Input string cannot be null.");
+            }
+            if (line.Length > k_MaxChars)
+            {
+                var message = new StringBuilder(50)
+                    .Append("Input exceeds the maximum length of ")
+                    .Append(k_MaxChars)
+                    .Append(" characters.")
+                    .ToString();
+                throw new LexerException(message);
+            }
+
+            byte[] utf8Bytes = Encoding.UTF8.GetBytes(line);
+            float[] vector = new float[utf8Bytes.Length];
+            const float multiplier = 1.0f / (1 << 23);
+
+            using (StreamWriter logWriter = new StreamWriter(logFilePath, true))
+            {
+                logWriter.WriteLine($"Processing string: {line}");
+                for (int i = 0; i < utf8Bytes.Length; i++)
+                {
+                    vector[i] = utf8Bytes[i] * multiplier;
+                    logWriter.WriteLine($"Byte {i}: {utf8Bytes[i]} -> Float: {vector[i]}");
+                }
             }
 
             return vector;
