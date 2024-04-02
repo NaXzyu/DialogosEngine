@@ -150,5 +150,57 @@ namespace DialogosEngine.Tests
             Assert.IsEmpty(result, "The result array should be empty for an empty input string.");
             TestContext.WriteLine($"Test passed: Empty input string converts to expected empty UTF-8 float array.");
         }
+
+        [Test]
+        public static void VectorizeUTF8_PangramWithEmojisAndPunctuation_ConvertsToUtf8FloatArray()
+        {
+            // Arrange
+            string input = "The quick brown fox jumps over the lazy dog! 🦊🐶";
+            TestContext.WriteLine($"Testing with input string: '{input}'.");
+
+            // Expected values based on UTF-8 encoding
+            // ASCII values for the sentence and punctuation
+            // UTF-8 encoding for '🦊' is F0 9F A6 8A and for '🐶' is F0 9F 90 B6
+            var expected = new float[] {
+                // ASCII values for "The quick brown fox jumps over the lazy dog! "
+                84.0f / (1 << 23), 104.0f / (1 << 23), 101.0f / (1 << 23),
+                32.0f / (1 << 23), // space
+                113.0f / (1 << 23), 117.0f / (1 << 23), 105.0f / (1 << 23), 99.0f / (1 << 23), 107.0f / (1 << 23),
+                32.0f / (1 << 23), // space
+                98.0f / (1 << 23), 114.0f / (1 << 23), 111.0f / (1 << 23), 119.0f / (1 << 23), 110.0f / (1 << 23),
+                32.0f / (1 << 23), // space
+                102.0f / (1 << 23), 111.0f / (1 << 23), 120.0f / (1 << 23),
+                32.0f / (1 << 23), // space
+                106.0f / (1 << 23), 117.0f / (1 << 23), 109.0f / (1 << 23), 112.0f / (1 << 23), 115.0f / (1 << 23),
+                32.0f / (1 << 23), // space
+                111.0f / (1 << 23), 118.0f / (1 << 23), 101.0f / (1 << 23), 114.0f / (1 << 23),
+                32.0f / (1 << 23), // space
+                116.0f / (1 << 23), 104.0f / (1 << 23), 101.0f / (1 << 23),
+                32.0f / (1 << 23), // space
+                108.0f / (1 << 23), 97.0f / (1 << 23), 122.0f / (1 << 23), 121.0f / (1 << 23),
+                32.0f / (1 << 23), // space
+                100.0f / (1 << 23), 111.0f / (1 << 23), 103.0f / (1 << 23),
+                33.0f / (1 << 23), // exclamation mark
+                32.0f / (1 << 23), // space
+                // UTF-8 values for the emojis '🦊' and '🐶'
+                240.0f / (1 << 23), 159.0f / (1 << 23), 166.0f / (1 << 23), 138.0f / (1 << 23),
+                240.0f / (1 << 23), 159.0f / (1 << 23), 144.0f / (1 << 23), 182.0f / (1 << 23)
+            };
+
+
+            // Act
+            float[] result = Lexer.VectorizeUTF8(input);
+            TestContext.WriteLine($"Resulting float array: {Utility.FormatFloatArray(result)}");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.That(result.Length, Is.EqualTo(expected.Length), "The length of the result array should match the expected array.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(result[i], Is.EqualTo(expected[i]).Within(0.000001f), $"The UTF-8 value at index {i} should match the expected value within precision.");
+            }
+            TestContext.WriteLine($"Test passed: Input string '{input}' converts to expected UTF-8 float array.");
+        }
+
     }
 }
