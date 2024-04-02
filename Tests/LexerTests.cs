@@ -202,5 +202,109 @@ namespace DialogosEngine.Tests
             TestContext.WriteLine($"Test passed: Input string '{input}' converts to expected UTF-8 float array.");
         }
 
+        [Test]
+        public static void VectorizeUTF8_ChineseCharacters_ConvertsToUtf8FloatArray()
+        {
+            // Arrange
+            string input = "你好，世界！"; // "Hello, World!" in Chinese
+            TestContext.WriteLine($"Testing with input string: '{input}'.");
+
+            // Expected values based on UTF-8 encoding for the Chinese characters
+            // UTF-8 encoding for '你' is E4 BD A0, for '好' is E5 A5 BD, for '，' is EF BC 8C,
+            // for '世' is E4 B8 96, for '界' is E7 95 8C, and for '！' is EF BC 81
+            var expected = new float[] {
+                228.0f / (1 << 23), 189.0f / (1 << 23), 160.0f / (1 << 23), // '你'
+                229.0f / (1 << 23), 165.0f / (1 << 23), 189.0f / (1 << 23), // '好'
+                239.0f / (1 << 23), 188.0f / (1 << 23), 140.0f / (1 << 23), // '，'
+                228.0f / (1 << 23), 184.0f / (1 << 23), 150.0f / (1 << 23), // '世'
+                231.0f / (1 << 23), 149.0f / (1 << 23), 140.0f / (1 << 23), // '界'
+                239.0f / (1 << 23), 188.0f / (1 << 23), 129.0f / (1 << 23)  // '！'
+            };
+
+            // Act
+            float[] result = Lexer.VectorizeUTF8(input);
+            TestContext.WriteLine($"Resulting float array: {Utility.FormatFloatArray(result)}");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.That(result.Length, Is.EqualTo(expected.Length), "The length of the result array should match the expected array.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(result[i], Is.EqualTo(expected[i]).Within(0.000001f), $"The UTF-8 value at index {i} should match the expected value within precision.");
+            }
+            TestContext.WriteLine($"Test passed: Input string '{input}' converts to expected UTF-8 float array.");
+        }
+
+        [Test]
+        public static void VectorizeUTF8_ChineseHeading_ConvertsToUtf8FloatArray()
+        {
+            // Arrange
+            string input = "Dialogos: 在Unity中利用增强的AI开创互动叙事和语言能力";
+            TestContext.WriteLine($"Testing with input string: '{input}'.");
+
+            // Expected values based on UTF-8 encoding for the Chinese heading
+            var expected = new float[] {
+                // UTF-8 values for "Dialogos: "
+                68.0f / (1 << 23), 105.0f / (1 << 23), 97.0f / (1 << 23), 108.0f / (1 << 23), 111.0f / (1 << 23),
+                103.0f / (1 << 23), 111.0f / (1 << 23), 115.0f / (1 << 23), 58.0f / (1 << 23),
+                // Space is represented by 32 in UTF-8
+                32.0f / (1 << 23),
+                // UTF-8 values for the Chinese part of the heading "在Unity中利用增强的AI开创互动叙事和语言能力"
+                // '在' is E5 9C A8
+                229.0f / (1 << 23), 156.0f / (1 << 23), 168.0f / (1 << 23),
+                // 'Unity' in ASCII
+                85.0f / (1 << 23), 110.0f / (1 << 23), 105.0f / (1 << 23), 116.0f / (1 << 23), 121.0f / (1 << 23),
+                // '中' is E4 B8 AD
+                228.0f / (1 << 23), 184.0f / (1 << 23), 173.0f / (1 << 23),
+                // '利' is E5 88 A9
+                229.0f / (1 << 23), 136.0f / (1 << 23), 169.0f / (1 << 23),
+                // '用' is E7 94 A8
+                231.0f / (1 << 23), 149.0f / (1 << 23), 168.0f / (1 << 23),
+                // '增' is E5 A2 9E
+                229.0f / (1 << 23), 162.0f / (1 << 23), 158.0f / (1 << 23),
+                // '强' is E5 BC BA
+                229.0f / (1 << 23), 188.0f / (1 << 23), 186.0f / (1 << 23),
+                // '的' is E7 9A 84
+                231.0f / (1 << 23), 154.0f / (1 << 23), 132.0f / (1 << 23),
+                // 'AI' in ASCII
+                65.0f / (1 << 23), 73.0f / (1 << 23),
+                // '开' is E5 BC 80
+                229.0f / (1 << 23), 188.0f / (1 << 23), 128.0f / (1 << 23),
+                // '创' is E5 88 9B
+                229.0f / (1 << 23), 136.0f / (1 << 23), 155.0f / (1 << 23),
+                // '互' is E4 BA 92
+                228.0f / (1 << 23), 186.0f / (1 << 23), 146.0f / (1 << 23),
+                // '动' is E5 8A A8
+                229.0f / (1 << 23), 138.0f / (1 << 23), 168.0f / (1 << 23),
+                // '叙' is E5 8F 99
+                229.0f / (1 << 23), 143.0f / (1 << 23), 153.0f / (1 << 23),
+                // '事' is E4 BA 8B
+                228.0f / (1 << 23), 186.0f / (1 << 23), 139.0f / (1 << 23),
+                // '和' is E5 92 8C
+                229.0f / (1 << 23), 146.0f / (1 << 23), 140.0f / (1 << 23),
+                // '语' is E8 AF AD
+                232.0f / (1 << 23), 175.0f / (1 << 23), 173.0f / (1 << 23),
+                // '言' is E8 A8 80
+                232.0f / (1 << 23), 168.0f / (1 << 23), 128.0f / (1 << 23),
+                // '能' is E8 83 BD
+                232.0f / (1 << 23), 131.0f / (1 << 23), 189.0f / (1 << 23),
+                // '力' is E5 8A 9B
+                229.0f / (1 << 23), 138.0f / (1 << 23), 155.0f / (1 << 23),
+            };
+
+            // Act
+            float[] result = Lexer.VectorizeUTF8(input);
+            TestContext.WriteLine($"Resulting float array: {Utility.FormatFloatArray(result)}");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.That(result.Length, Is.EqualTo(expected.Length), "The length of the result array should match the expected array.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(result[i], Is.EqualTo(expected[i]).Within(0.000001f), $"The UTF-8 value at index {i} should match the expected value within precision.");
+            }
+            TestContext.WriteLine($"Test passed: Input string '{input}' converts to expected UTF-8 float array.");
+        }
+
     }
 }
