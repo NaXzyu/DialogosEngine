@@ -15,7 +15,9 @@ namespace DialogosEngine
         private static bool _isLittleEndian;
         public static bool IsLittleEndian => _isLittleEndian;
 
-        public static float[] powersOfTen = Enumerable.Range(0, k_CharsPerFloat).Select(x => (float)Math.Pow(10, 3 * x)).ToArray();
+        public static float[] PowersOfTen = Enumerable.Range(0, k_CharsPerFloat).Select(x => (float)Math.Pow(10, 3 * x)).ToArray();
+        public const float MultiplierASCII = 0.000001f;
+        public const float MultiplierUTF8 = 1.0f / (1 << 23);
 
         public static float[] Vectorize(string line)
         {
@@ -35,7 +37,6 @@ namespace DialogosEngine
 
             int vectorSize = (int)Math.Ceiling((float)line.Length / k_CharsPerFloat);
             float[] vector = new float[vectorSize];
-            const float multiplier = 0.000001f;
 
             for (int i = 0, j = 0; i < line.Length; i += k_CharsPerFloat, j++)
             {
@@ -45,10 +46,10 @@ namespace DialogosEngine
                 for (int k = 0; k < charsToProcess; k++)
                 {
                     // Inline ASCII conversion
-                    packedValue += (line[i + k] * powersOfTen[charsToProcess - k - 1]);
+                    packedValue += (line[i + k] * PowersOfTen[charsToProcess - k - 1]);
                 }
 
-                vector[j] = packedValue * multiplier;
+                vector[j] = packedValue * MultiplierASCII;
             }
 
             return vector;
@@ -72,11 +73,10 @@ namespace DialogosEngine
 
             byte[] utf8Bytes = Encoding.UTF8.GetBytes(line);
             float[] vector = new float[utf8Bytes.Length];
-            const float multiplier = 1.0f / (1 << 23);
 
             for (int i = 0; i < utf8Bytes.Length; i++)
             {
-                vector[i] = utf8Bytes[i] * multiplier;
+                vector[i] = utf8Bytes[i] * MultiplierUTF8;
             }
 
             return vector;
