@@ -130,5 +130,25 @@ namespace DialogosEngine.Tests
             }
             TestContext.WriteLine($"Test passed: Input string '{input}' converts to expected UTF-8 float array.");
         }
+
+        [Test]
+        public static void VectorizeUTF8_EmptyString_ReturnsEmptyArray()
+        {
+            // Arrange
+            string input = "";
+            TestContext.WriteLine($"Testing with empty input string.");
+
+            // Expected value for an empty string is an empty float array
+            var expected = new float[] { };
+
+            // Act
+            float[] result = Lexer.VectorizeUTF8(input);
+            TestContext.WriteLine($"Resulting float array: {Utility.FormatFloatArray(result)}");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsEmpty(result, "The result array should be empty for an empty input string.");
+            TestContext.WriteLine($"Test passed: Empty input string converts to expected empty UTF-8 float array.");
+        }
     }
 }
