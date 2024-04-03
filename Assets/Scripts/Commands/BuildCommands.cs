@@ -1,5 +1,4 @@
 using DialogosEngine;
-using UnityEngine;
 
 namespace CommandTerminal
 {

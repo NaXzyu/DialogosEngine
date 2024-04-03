@@ -1,8 +1,7 @@
-using Unity.MLAgents;
-using Unity.MLAgents.Sensors;
-using Unity.MLAgents.Actuators;
-using System.Collections.Generic;
 using CommandTerminal;
+using Unity.MLAgents;
+using Unity.MLAgents.Actuators;
+using Unity.MLAgents.Sensors;
 
 namespace DialogosEngine
 {
@@ -13,6 +12,8 @@ namespace DialogosEngine
         public override void OnEpisodeBegin()
         {
             ClearConsole();
+
+            //
         }
 
         public void FixedUpdate()
@@ -63,7 +64,7 @@ namespace DialogosEngine
         private char GetExpectedChar()
         {
             // Implementation to get the expected character for the current step
-            return new char();  
+            return new char();
         }
     }
 }

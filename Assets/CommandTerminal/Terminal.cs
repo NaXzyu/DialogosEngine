@@ -41,8 +41,8 @@ namespace CommandTerminal
 
         void Initialize()
         {
-            Settings = new CommandSettings();
             Commands = new Commands();
+            Settings = new CommandSettings();
             Buffer = new CommandBuffer(Settings.BufferSize);
             Shell = new CommandShell();
             History = new CommandHistory();
