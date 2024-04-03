@@ -109,6 +109,15 @@ namespace CommandTerminal
             }
         }
 
+        public string GetLastLog()
+        {
+            if (_Logs.Count == 0)
+            {
+                return string.Empty;
+            }
+            return _Logs[_Logs.Count - 1].Message;
+        }
+
         public void Reset()
         {
             _Logs.Clear();

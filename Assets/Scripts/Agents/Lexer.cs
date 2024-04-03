@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEditor;
@@ -80,6 +79,34 @@ namespace DialogosEngine
             }
 
             return vector;
+        }
+
+        public static string QuantizeUTF8(float[] vector)
+        {
+            if (vector == null)
+            {
+                throw new ArgumentNullException(nameof(vector), "Input vector cannot be null.");
+            }
+
+            byte[] utf8Bytes = new byte[vector.Length];
+            int index = 0;
+            while (index < vector.Length)
+            {
+                utf8Bytes[index] = (byte)(vector[index] / MultiplierUTF8);
+                index++;
+            }
+
+            Decoder utf8Decoder = Encoding.UTF8.GetDecoder();
+            int charCount = utf8Decoder.GetCharCount(utf8Bytes, 0, utf8Bytes.Length);
+            if (charCount > k_MaxChars)
+            {
+                throw new LexerException($"Output exceeds the maximum length of {k_MaxChars} characters.");
+            }
+
+            char[] chars = new char[charCount];
+            utf8Decoder.GetChars(utf8Bytes, 0, utf8Bytes.Length, chars, 0);
+
+            return new string(chars);
         }
 
         public static float CalculateWhitespace(string[] text)

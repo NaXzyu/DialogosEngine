@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace DialogosEngine.Tests
+﻿namespace DialogosEngine.Tests
 {
     [TestFixture]
     public static class LexerTests
@@ -93,7 +91,6 @@ namespace DialogosEngine.Tests
             }
             TestContext.WriteLine($"Test passed: Input string '{input}' converts to expected packed float array.");
         }
-
 
         [Test]
         public static void VectorizeUTF8_GivenString_ConvertsToUtf8FloatArray()
@@ -306,5 +303,105 @@ namespace DialogosEngine.Tests
             TestContext.WriteLine($"Test passed: Input string '{input}' converts to expected UTF-8 float array.");
         }
 
+        [Test]
+        public static void QuantizeUTF8_GivenFloatArray_ConvertsToUtf8String()
+        {
+            // Arrange
+            string expected = "Test"; // The expected UTF-8 string output
+            float[] input = Lexer.VectorizeUTF8(expected); // Use VectorizeUTF8 to get the correct float array
+
+            TestContext.WriteLine($"Testing with input float array: '{Utility.FormatFloatArray(input)}'.");
+
+            // Act
+            string result = Lexer.QuantizeUTF8(input);
+            TestContext.WriteLine($"Resulting UTF-8 string: '{result}'");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.EqualTo(expected), "The resulting string should match the expected UTF-8 string.");
+            TestContext.WriteLine($"Test passed: Input float array converts to expected UTF-8 string '{expected}'.");
+        }
+
+        [Test]
+        public static void QuantizeUTF8_ComplexStringWithEmojis_ConvertsToUtf8String()
+        {
+            // Arrange
+            string expected = "The quick brown fox jumps over the lazy dog 🚀🦊🐶";
+            float[] input = Lexer.VectorizeUTF8(expected); // Use VectorizeUTF8 to get the correct float array
+
+            TestContext.WriteLine($"Testing with input float array: '{Utility.FormatFloatArray(input)}'.");
+
+            // Act
+            string result = Lexer.QuantizeUTF8(input);
+            TestContext.WriteLine($"Resulting UTF-8 string: '{result}'");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.EqualTo(expected), "The resulting string should match the expected complex UTF-8 string with emojis.");
+            TestContext.WriteLine($"Test passed: Input float array converts to expected UTF-8 string with emojis '{expected}'.");
+        }
+
+        [Test]
+        public static void QuantizeUTF8_JapaneseText_ConvertsToUtf8String()
+        {
+            // Arrange
+            string expected = "これは日本語の段落テストです。このテストは、UTF-8関数が日本語の文字を含むテキストを正しく処理できることを確認するためのものです。"; // A sample Japanese paragraph
+                                                                                                     // Ensure the string is not longer than 1000 characters
+            expected = expected.Substring(0, Math.Min(1000, expected.Length));
+            float[] input = Lexer.VectorizeUTF8(expected); // Use VectorizeUTF8 to get the correct float array
+
+            TestContext.WriteLine($"Testing with input float array: '{Utility.FormatFloatArray(input)}'.");
+
+            // Act
+            string result = Lexer.QuantizeUTF8(input);
+            TestContext.WriteLine($"Resulting UTF-8 string: '{result}'");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.EqualTo(expected), "The resulting string should match the expected Japanese UTF-8 string.");
+            TestContext.WriteLine($"Test passed: Input float array converts to expected UTF-8 Japanese text '{expected}'.");
+        }
+
+        [Test]
+        public static void QuantizeUTF8_ChineseText_ConvertsToUtf8String()
+        {
+            // Arrange
+            string expected = "这是一个中文段落测试。这个测试将验证UTF-8函数是否能够正确处理包含中文字符的文本。"; // A sample Chinese paragraph
+                                                                             // Ensure the string is not longer than 1000 characters
+            expected = expected.Substring(0, Math.Min(1000, expected.Length));
+            float[] input = Lexer.VectorizeUTF8(expected); // Use VectorizeUTF8 to get the correct float array
+
+            TestContext.WriteLine($"Testing with input float array: '{Utility.FormatFloatArray(input)}'.");
+
+            // Act
+            string result = Lexer.QuantizeUTF8(input);
+            TestContext.WriteLine($"Resulting UTF-8 string: '{result}'");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.EqualTo(expected), "The resulting string should match the expected Chinese UTF-8 string.");
+            TestContext.WriteLine($"Test passed: Input float array converts to expected UTF-8 Chinese text '{expected}'.");
+        }
+
+        [Test]
+        public static void QuantizeUTF8_EmojiString_ConvertsToUtf8String()
+        {
+            // Arrange
+            string expected = "😀😃😄😁😆😅😂🤣😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🤩🥳😏😒😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😤😠😡🤬😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😬🙄😯😦😧😮😲🥱😴🤤😪😵🤐🥴🤢🤮🤧😷🤒🤕😈👿👹👺💀☠️👻👽👾🤖💩😺😸😹😻😼😽🙀😿😾";
+            // Ensure the string is not longer than 1000 characters
+            expected = expected.Substring(0, Math.Min(1000, expected.Length));
+            float[] input = Lexer.VectorizeUTF8(expected); // Use VectorizeUTF8 to get the correct float array
+
+            TestContext.WriteLine($"Testing with input float array: '{Utility.FormatFloatArray(input)}'.");
+
+            // Act
+            string result = Lexer.QuantizeUTF8(input);
+            TestContext.WriteLine($"Resulting UTF-8 string: '{result}'");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.EqualTo(expected), "The resulting string should match the expected emoji-only UTF-8 string.");
+            TestContext.WriteLine($"Test passed: Input float array converts to expected UTF-8 emoji-only string '{expected}'.");
+        }
     }
 }
