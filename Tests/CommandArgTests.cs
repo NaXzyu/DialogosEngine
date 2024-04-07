@@ -141,5 +141,120 @@ namespace DialogosEngine.Tests
             // Assert
             Assert.That(result, Is.EqualTo(input), "The result should be the same as the input string when there are no escaped quotes.");
         }
+
+        [Test]
+        public static void ParseCommand_MixedArgumentTypes_HandlesAllCorrectly()
+        {
+            // Arrange
+            string input = "command \"quoted arg\" unquoted '' \"\"";
+            string[] expected = { "command", "quoted arg", "unquoted", "", "" };
+
+            // Act & Assert
+            for (int i = 0; i < expected.Length; i++)
+            {
+                CommandArg result = CommandUtils.ParseCommand(ref input);
+                Assert.That(result.String, Is.EqualTo(expected[i]), $"Argument {i} should be '{expected[i]}'");
+            }
+        }
+
+        [Test]
+        public static void ParseCommand_ExcessiveWhitespace_HandlesCorrectly()
+        {
+            // Arrange
+            string input = "command   \t \"quoted arg\"   unquoted  ";
+            string[] expected = { "command", "quoted arg", "unquoted" };
+
+            // Act & Assert
+            for (int i = 0; i < expected.Length; i++)
+            {
+                CommandArg result = CommandUtils.ParseCommand(ref input);
+                Assert.That(result.String, Is.EqualTo(expected[i]), $"Argument {i} should be '{expected[i]}'");
+            }
+        }
+
+        [Test]
+        public static void ParseCommand_SpecialCharacters_HandlesCorrectly()
+        {
+            // Arrange
+            string input = "command $%^&*()_+!";
+            string expected = "command";
+
+            // Act
+            CommandArg result = CommandUtils.ParseCommand(ref input);
+
+            // Assert
+            Assert.That(result.String, Is.EqualTo(expected), "Command with special characters should be handled correctly.");
+        }
+
+        [Test]
+        public static void ParseCommand_UnicodeCharacters_HandlesCorrectly()
+        {
+            // Arrange
+            string input = "command 你好";
+            string expected = "command";
+
+            // Act
+            CommandArg result = CommandUtils.ParseCommand(ref input);
+
+            // Assert
+            Assert.That(result.String, Is.EqualTo(expected), "Command with Unicode characters should be handled correctly.");
+        }
+
+        [Test]
+        public static void ParseCommand_LongString_HandlesCorrectly()
+        {
+            // Arrange
+            string input = new string('a', 10000);
+            string expected = input;
+
+            // Act
+            CommandArg result = CommandUtils.ParseCommand(ref input);
+
+            // Assert
+            Assert.That(result.String, Is.EqualTo(expected), "Long string arguments should be handled correctly.");
+        }
+
+        [Test]
+        public static void ParseCommand_EmptyInput_ReturnsEmptyCommandArg()
+        {
+            // Arrange
+            string input = "";
+
+            // Act
+            CommandArg result = CommandUtils.ParseCommand(ref input);
+
+            // Assert
+            Assert.That(result.String, Is.EqualTo(""), "Empty input should return an empty CommandArg.");
+        }
+
+        [Test]
+        public static void ParseCommand_OnlyQuotes_HandlesCorrectly()
+        {
+            // Arrange
+            string input = "\"\"";
+            string expected = "";
+
+            // Act
+            CommandArg result = CommandUtils.ParseCommand(ref input);
+
+            // Assert
+            Assert.That(result.String, Is.EqualTo(expected), "Input with only quotes should return an empty CommandArg.");
+        }
+
+        [Test]
+        public static void ParseCommand_EscapedBackslashes_HandlesCorrectly()
+        {
+            // Arrange
+            string input = "command \\\\";
+            string expected = "command";
+
+            // Act
+            CommandArg result = CommandUtils.ParseCommand(ref input);
+
+            // Assert
+            Assert.That(result.String, Is.EqualTo(expected), "Escaped backslashes should be handled correctly.");
+        }
+
+
     }
 }
