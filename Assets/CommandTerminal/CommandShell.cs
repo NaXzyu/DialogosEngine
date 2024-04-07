@@ -24,7 +24,7 @@ namespace CommandTerminal
 
             while (_remaining != "")
             {
-                var _arg = CommandUtils.EatArgument(ref _remaining);
+                var _arg = CommandUtils.ParseCommand(ref _remaining);
 
                 if (_arg.String != "")
                 {

@@ -39,21 +39,55 @@ namespace CommandTerminal
             return methodDictionary;
         }
 
-        public static CommandArg EatArgument(ref string s)
+        public static CommandArg ParseCommand(ref string s)
         {
             var arg = new CommandArg();
-            int space_index = s.IndexOf(' ');
-            if (space_index >= 0)
+            s = s.Trim();
+
+            char[] quoteChars = { '\"', '\'' };
+
+            foreach (var quoteChar in quoteChars)
             {
-                arg.String = s.Substring(0, space_index);
-                s = s.Substring(space_index + 1);
+                if (s.StartsWith(quoteChar.ToString()))
+                {
+                    int quoteIndex = FindClosingQuote(s, quoteChar);
+                    if (quoteIndex >= 0)
+                    {
+                        arg.String = UnescapedQuotes(s.Substring(1, quoteIndex - 1), quoteChar);
+                        s = s.Substring(quoteIndex + 1).Trim();
+                        return arg;
+                    }
+                }
+            }
+
+            int spaceIndex = s.IndexOf(' ');
+            if (spaceIndex >= 0)
+            {
+                arg.String = s.Substring(0, spaceIndex);
+                s = s.Substring(spaceIndex + 1).Trim();
             }
             else
             {
                 arg.String = s;
                 s = "";
             }
+
             return arg;
+        }
+
+        public static int FindClosingQuote(string s, char quoteChar)
+        {
+            int quoteIndex = s.IndexOf(quoteChar, 1);
+            while (quoteIndex > 0 && s[quoteIndex - 1] == '\\')
+            {
+                quoteIndex = s.IndexOf(quoteChar, quoteIndex + 1);
+            }
+            return quoteIndex;
+        }
+
+        public static string UnescapedQuotes(string s, char quoteChar)
+        {
+            return s.Replace("\\" + quoteChar, quoteChar.ToString());
         }
     }
 }
