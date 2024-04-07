@@ -21,6 +21,9 @@ namespace CommandTerminal
                 case "load":
                     LoadPrefab(prefabName);
                     break;
+                case "destroy":
+                    DestroyPrefab(prefabName);
+                    break;
                 default:
                     Terminal.Instance.LogError($"[PREFAB] Unknown mode: {mode}");
                     break;
@@ -38,6 +41,20 @@ namespace CommandTerminal
             else
             {
                 Terminal.Instance.LogError($"[PREFAB] Could not find prefab: {prefabName}");
+            }
+        }
+
+        private static void DestroyPrefab(string prefabName)
+        {
+            GameObject prefabObject = GameObject.Find($"{prefabName}(Clone)");
+            if (prefabObject != null)
+            {
+                Object.Destroy(prefabObject);
+                Terminal.Instance.Log($"[PREFAB] {prefabName} destroyed successfully.");
+            }
+            else
+            {
+                Terminal.Instance.LogError($"[PREFAB] Could not find object: {prefabName}");
             }
         }
     }

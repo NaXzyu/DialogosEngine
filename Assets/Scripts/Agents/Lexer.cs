@@ -109,6 +109,43 @@ namespace DialogosEngine
             return new string(chars);
         }
 
+        public static int LevenshteinDistance(string a, string b)
+        {
+            if (string.IsNullOrEmpty(a))
+            {
+                return string.IsNullOrEmpty(b) ? 0 : b.Length;
+            }
+
+            if (string.IsNullOrEmpty(b))
+            {
+                return a.Length;
+            }
+
+            int[] codePointsA = a.ToCharArray().Select(c => char.ConvertToUtf32(a, a.IndexOf(c))).ToArray();
+            int[] codePointsB = b.ToCharArray().Select(c => char.ConvertToUtf32(b, b.IndexOf(c))).ToArray();
+
+            int lengthA = codePointsA.Length;
+            int lengthB = codePointsB.Length;
+            var distances = new int[lengthA + 1, lengthB + 1];
+
+            for (int i = 0; i <= lengthA; distances[i, 0] = i++) { }
+            for (int j = 0; j <= lengthB; distances[0, j] = j++) { }
+
+            for (int i = 1; i <= lengthA; i++)
+            {
+                for (int j = 1; j <= lengthB; j++)
+                {
+                    int cost = codePointsB[j - 1] == codePointsA[i - 1] ? 0 : 1;
+                    distances[i, j] = Mathf.Min(
+                        Mathf.Min(distances[i - 1, j] + 1, distances[i, j - 1] + 1),
+                        distances[i - 1, j - 1] + cost);
+                }
+            }
+
+            return distances[lengthA, lengthB];
+        }
+
+
         public static float CalculateWhitespace(string[] text)
         {
             int _totalWhitespace = text.Sum(line => line.Count(char.IsWhiteSpace));

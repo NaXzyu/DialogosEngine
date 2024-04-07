@@ -403,5 +403,177 @@
             Assert.That(result, Is.EqualTo(expected), "The resulting string should match the expected emoji-only UTF-8 string.");
             TestContext.WriteLine($"Test passed: Input float array converts to expected UTF-8 emoji-only string '{expected}'.");
         }
+
+        [Test]
+        public static void LevenshteinDistance_GivenStrings_CalculatesCorrectDistance()
+        {
+            // Arrange
+            string stringA = "kitten";
+            string stringB = "sitting";
+            int expectedDistance = 3; // 'k' to 's', 'e' to 'i', and append 'g' at the end
+
+            TestContext.WriteLine($"Testing Levenshtein distance between '{stringA}' and '{stringB}'.");
+
+            // Act
+            int result = Lexer.LevenshteinDistance(stringA, stringB);
+            TestContext.WriteLine($"Resulting Levenshtein distance: {result}");
+
+            // Assert
+            Assert.IsNotNull(result, "The result should not be null.");
+            Assert.That(result, Is.EqualTo(expectedDistance), $"The Levenshtein distance between '{stringA}' and '{stringB}' should be {expectedDistance}.");
+
+            TestContext.WriteLine($"Test passed: The Levenshtein distance between '{stringA}' and '{stringB}' is correctly calculated as {expectedDistance}.");
+        }
+
+        [Test]
+        public static void LevenshteinDistance_ComplexScenarios_CalculatesCorrectDistances()
+        {
+            // Arrange
+            var testCases = new[]
+            {
+                new { StringA = "book", StringB = "back", ExpectedDistance = 2 },
+                new { StringA = "historical", StringB = "hysterical", ExpectedDistance = 2 },
+                new { StringA = "intention", StringB = "execution", ExpectedDistance = 5 },
+                new { StringA = "example", StringB = "samples", ExpectedDistance = 3 },
+                new { StringA = "sturgeon", StringB = "urgently", ExpectedDistance = 6 },
+                new { StringA = "levenshtein", StringB = "frankenstein", ExpectedDistance = 6 },
+                new { StringA = "distance", StringB = "difference", ExpectedDistance = 5 },
+                new { StringA = "a", StringB = "ab", ExpectedDistance = 1 },
+                new { StringA = "", StringB = "nonempty", ExpectedDistance = 8 },
+                new { StringA = "uppercase", StringB = "UPPERCASE", ExpectedDistance = 9 }
+            };
+
+            foreach (var testCase in testCases)
+            {
+                TestContext.WriteLine($"Testing Levenshtein distance between '{testCase.StringA}' and '{testCase.StringB}'.");
+
+                // Act
+                int result = Lexer.LevenshteinDistance(testCase.StringA, testCase.StringB);
+                TestContext.WriteLine($"Resulting Levenshtein distance: {result}");
+
+                // Assert
+                Assert.IsNotNull(result, "The result should not be null.");
+                Assert.That(result, Is.EqualTo(testCase.ExpectedDistance), $"The Levenshtein distance between '{testCase.StringA}' and '{testCase.StringB}' should be {testCase.ExpectedDistance}.");
+                TestContext.WriteLine($"Test passed: The Levenshtein distance between '{testCase.StringA}' and '{testCase.StringB}' is correctly calculated as {testCase.ExpectedDistance}.");
+            }
+        }
+
+        [Test]
+        public static void LevenshteinDistance_WithUTF8Characters_CalculatesCorrectDistance()
+        {
+            // Arrange
+            string stringA = "café"; // 'é' is a UTF-8 character
+            string stringB = "cafe";
+            int expectedDistance = 1; // Only one substitution required ('é' to 'e')
+
+            TestContext.WriteLine($"Testing Levenshtein distance between '{stringA}' and '{stringB}'.");
+
+            // Act
+            int result = Lexer.LevenshteinDistance(stringA, stringB);
+            TestContext.WriteLine($"Resulting Levenshtein distance: {result}");
+
+            // Assert
+            Assert.IsNotNull(result, "The result should not be null.");
+            Assert.That(result, Is.EqualTo(expectedDistance), $"The Levenshtein distance between '{stringA}' and '{stringB}' should be {expectedDistance}.");
+
+            TestContext.WriteLine($"Test passed: The Levenshtein distance between '{stringA}' and '{stringB}' is correctly calculated as {expectedDistance}.");
+        }
+
+        [Test]
+        public static void LevenshteinDistance_MultipleUTF8Characters_CalculatesCorrectDistances()
+        {
+            // Arrange
+            var testCases = new[]
+            {
+                new { StringA = "schön", StringB = "schon", ExpectedDistance = 1 },
+                new { StringA = "naïve", StringB = "naive", ExpectedDistance = 1 },
+                new { StringA = "façade", StringB = "facade", ExpectedDistance = 1 },
+                new { StringA = "résumé", StringB = "resume", ExpectedDistance = 2 },
+                new { StringA = "niño", StringB = "nino", ExpectedDistance = 1 },
+                new { StringA = "jalapeño", StringB = "jalapeno", ExpectedDistance = 1 },
+                new { StringA = "touché", StringB = "touche", ExpectedDistance = 1 },
+                new { StringA = "über", StringB = "uber", ExpectedDistance = 1 },
+                new { StringA = "crème brûlée", StringB = "creme brulee", ExpectedDistance = 3 },
+                new { StringA = "coöperate", StringB = "cooperate", ExpectedDistance = 1 }
+            };
+
+            foreach (var testCase in testCases)
+            {
+                TestContext.WriteLine($"Testing Levenshtein distance between '{testCase.StringA}' and '{testCase.StringB}'.");
+
+                // Act
+                int result = Lexer.LevenshteinDistance(testCase.StringA, testCase.StringB);
+                TestContext.WriteLine($"Resulting Levenshtein distance: {result}");
+
+                // Assert
+                Assert.IsNotNull(result, "The result should not be null.");
+                Assert.That(result, Is.EqualTo(testCase.ExpectedDistance), $"The Levenshtein distance between '{testCase.StringA}' and '{testCase.StringB}' should be {testCase.ExpectedDistance}.");
+                TestContext.WriteLine($"Test passed: The Levenshtein distance between '{testCase.StringA}' and '{testCase.StringB}' is correctly calculated as {testCase.ExpectedDistance}.");
+            }
+        }
+
+        [Test]
+        public static void LevenshteinDistance_ChineseCharacters_CalculatesCorrectDistance()
+        {
+            // Arrange
+            string stringA = "中文"; // Chinese for "Chinese language"
+            string stringB = "汉语"; // Chinese for "Chinese language" in another dialect
+            int expectedDistance = 2; // Two substitutions required
+
+            TestContext.WriteLine($"Testing Levenshtein distance between '{stringA}' and '{stringB}'.");
+
+            // Act
+            int result = Lexer.LevenshteinDistance(stringA, stringB);
+            TestContext.WriteLine($"Resulting Levenshtein distance: {result}");
+
+            // Assert
+            Assert.IsNotNull(result, "The result should not be null.");
+            Assert.That(result, Is.EqualTo(expectedDistance), $"The Levenshtein distance between '{stringA}' and '{stringB}' should be {expectedDistance}.");
+
+            TestContext.WriteLine($"Test passed: The Levenshtein distance between '{stringA}' and '{stringB}' is correctly calculated as {expectedDistance}.");
+        }
+
+        [Test]
+        public static void LevenshteinDistance_ComplexChineseCharacters_CalculatesCorrectDistance()
+        {
+            // Arrange
+            string stringA = "提案"; // Chinese for "proposal"
+            string stringB = "题案"; // Chinese for "test case" or "exam question"
+            int expectedDistance = 1; // Two substitutions required
+
+            TestContext.WriteLine($"Testing Levenshtein distance between '{stringA}' and '{stringB}'.");
+
+            // Act
+            int result = Lexer.LevenshteinDistance(stringA, stringB);
+            TestContext.WriteLine($"Resulting Levenshtein distance: {result}");
+
+            // Assert
+            Assert.IsNotNull(result, "The result should not be null.");
+            Assert.That(result, Is.EqualTo(expectedDistance), $"The Levenshtein distance between '{stringA}' and '{stringB}' should be {expectedDistance}.");
+
+            TestContext.WriteLine($"Test passed: The Levenshtein distance between '{stringA}' and '{stringB}' is correctly calculated as {expectedDistance}.");
+        }
+
+        [Test]
+        public static void LevenshteinDistance_LongChineseStrings_CalculatesCorrectDistance()
+        {
+            // Arrange
+            string stringA = "我喜欢在公园散步"; // Chinese for "I like walking in the park"
+            string stringB = "我喜歡在公園散步和閱讀"; // Chinese for "I like walking and reading in the park"
+            int expectedDistance = 5;
+
+            TestContext.WriteLine($"Testing Levenshtein distance between '{stringA}' and '{stringB}'.");
+
+            // Act
+            int result = Lexer.LevenshteinDistance(stringA, stringB);
+            TestContext.WriteLine($"Resulting Levenshtein distance: {result}");
+
+            // Assert
+            Assert.IsNotNull(result, "The result should not be null.");
+            Assert.That(result, Is.EqualTo(expectedDistance), $"The Levenshtein distance between '{stringA}' and '{stringB}' should be {expectedDistance}.");
+
+            TestContext.WriteLine($"Test passed: The Levenshtein distance between '{stringA}' and '{stringB}' is correctly calculated as {expectedDistance}.");
+        }
+
     }
 }
