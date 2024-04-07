@@ -25,8 +25,11 @@ namespace DialogosEngine
                 if (_CachedGuessedString.EndsWith(k_EndOfSequence))
                 {
                     _reward = CalculateReward(expectedString, _CachedGuessedString);
+                    
                     _CachedGuessedString = _CachedGuessedString.Replace(k_EndOfSequence, "");
+                    
                     Terminal.Instance.Shell.Run(_CachedGuessedString);
+                    
                     if(Terminal.Instance.IssuedError)
                     {
                         _reward -= 0.5f; // Penalize for bad commands

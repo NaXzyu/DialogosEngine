@@ -6,6 +6,9 @@
 # System Commands
 Register { Register, 0, -1, "Registers a new command in the terminal."}
 Register { Unregister, 1, 1, "Unregisters an existing command from the terminal."}
+Register { clear, 0, 1, "Clears the console and archives the log lines."}
+Register { print, 1, 1, "Prints a message to the terminal."}
+Register { echo, 1, 1, "Echo's a message to the terminal."}
 
 # Help Command
 Register { Help, 0, -1, "Displays help information for all commands."}

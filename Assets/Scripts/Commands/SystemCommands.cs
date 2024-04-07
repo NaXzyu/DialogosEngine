@@ -51,5 +51,48 @@ namespace CommandTerminal
                 Terminal.Instance.LogError("[SYST] Unable to locate the terminal in TerminalCommand.");
             }
         }
+
+        [Command("clear")]
+        public static void ClearCommand(CommandArg[] args)
+        {
+            if (args.Length == 0)
+            {
+                Terminal.Instance.Buffer.ArchiveLogs();
+            }
+            else if (args.Length == 1 && args[0].String == "--reset")
+            {
+                Terminal.Instance.Buffer.Reset();
+            }
+            else
+            {
+                Terminal.Instance.LogError("[SYST] Insufficient arguments provided for 'clear' command.");
+            }
+        }
+
+        [Command("print")]
+        public static void PrintCommand(CommandArg[] args)
+        {
+            if (args.Length == 1)
+            {
+                Terminal.Instance.Log(args[0].String);
+            }
+            else
+            {
+                Terminal.Instance.LogError("[SYST] Insufficient arguments provided for 'print' command.");
+            }
+        }
+
+        [Command("echo")]
+        public static void EchoCommand(CommandArg[] args)
+        {
+            if (args.Length == 1)
+            {
+                PrintCommand(new CommandArg[] { args[0] });
+            }
+            else
+            {
+                Terminal.Instance.LogError("[SYST] Insufficient arguments provided for 'echo' command.");
+            }
+        }
     }
 }
