@@ -205,7 +205,6 @@
             TestContext.WriteLine($"Test passed: The calculated reward matches the expected value within the specified tolerance.");
         }
 
-
         [Test]
         public void CalculateEchoReward_ShouldHandleMaxRandomASCIICharacters()
         {
@@ -227,5 +226,73 @@
             TestContext.WriteLine($"Test passed: The calculated reward is negative as expected for very different strings.");
         }
 
+        [Test]
+        public void ProcessActionArray_ShouldShiftAndResizeArray()
+        {
+            // Arrange
+            float[] actionArray = { 0.5f, 0.1f, 0.2f, 0.3f, 0.4f };
+            int outputLength = 4; // Expected length after processing
+
+            // Act
+            AgentUtils.ProcessActionArray(ref actionArray, outputLength);
+
+            // Assert
+            Assert.AreEqual(outputLength, actionArray.Length, "The array should be resized to the output length.");
+            Assert.AreEqual(0.1f, actionArray[0], 0.0001f, "The first element should be shifted correctly.");
+            Assert.AreEqual(0.4f, actionArray[3], 0.0001f, "The last element should be shifted correctly.");
+        }
+
+        [Test]
+        public void ProcessActionArray_ShouldHandleEmptyArray()
+        {
+            // Arrange
+            float[] actionArray = { };
+            int outputLength = 0; // Expected length for an empty array
+
+            // Act
+            AgentUtils.ProcessActionArray(ref actionArray, outputLength);
+
+            // Assert
+            Assert.IsEmpty(actionArray, "The processed array should be empty.");
+        }
+
+        [Test]
+        public void ProcessActionArray_ShouldHandleSingleElement()
+        {
+            // Arrange
+            float[] actionArray = { 0.5f };
+            int outputLength = 0; // Expected length after removing the length control
+
+            // Act
+            AgentUtils.ProcessActionArray(ref actionArray, outputLength);
+
+            // Assert
+            Assert.IsEmpty(actionArray, "The processed array should be empty after removing the single element.");
+        }
+
+        [Test]
+        public void ProcessActionArray_ShouldNotModifyOriginalArrayWhenLengthIsZero()
+        {
+            // Arrange
+            float[] actionArray = { 0.5f, 0.1f };
+            int outputLength = 0; // Expected length after processing
+
+            // Act
+            AgentUtils.ProcessActionArray(ref actionArray, outputLength);
+
+            // Assert
+            Assert.IsEmpty(actionArray, "The processed array should be empty when the output length is zero.");
+        }
+
+        [Test]
+        public void ProcessActionArray_ShouldThrowExceptionForNullArray()
+        {
+            // Arrange
+            float[] actionArray = null;
+            int outputLength = 4;
+
+            // Act & Assert
+            Assert.Throws<System.ArgumentNullException>(() => AgentUtils.ProcessActionArray(ref actionArray, outputLength), "Processing a null array should throw an ArgumentNullException.");
+        }
     }
 }

@@ -36,5 +36,22 @@ namespace DialogosEngine
             // Ensure the final score is within the range [-1, 1]
             return Mathf.Clamp(combinedScore, -1f, 1f);
         }
+
+        public static void ProcessActionArray(ref float[] actionArray, int outputLength)
+        {
+            if (actionArray == null)
+            {
+                throw new ArgumentNullException(nameof(actionArray), "The action array cannot be null.");
+            }
+
+            // Shift the elements in the array to the left by one position to exclude the length control
+            for (int i = 1; i < actionArray.Length; i++)
+            {
+                actionArray[i - 1] = actionArray[i];
+            }
+
+            // Resize the array to the desired output length
+            Array.Resize(ref actionArray, outputLength);
+        }
     }
 }
