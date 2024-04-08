@@ -254,7 +254,5 @@ namespace DialogosEngine.Tests
             // Assert
             Assert.That(result.String, Is.EqualTo(expected), "Escaped backslashes should be handled correctly.");
         }
-
-
     }
 }
