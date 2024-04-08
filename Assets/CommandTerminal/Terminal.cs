@@ -32,6 +32,7 @@ namespace CommandTerminal
         public CommandEvents Events { get; private set; }
         public CommandGUI GUI { get; private set; }
         public CommandSystem System { get; private set; }
+        public CommandLogger Logger { get; private set; }
 
         void Awake()
         {
@@ -51,6 +52,7 @@ namespace CommandTerminal
             Events = new CommandEvents();
             GUI = new CommandGUI();
             System = new CommandSystem();
+            Logger = new CommandLogger();
         }
 
         void Start()
@@ -273,6 +275,11 @@ namespace CommandTerminal
         public void LogError(string message)
         {
             Shell.IssueErrorMessage($"{message}");
+        }
+
+        public void LogToFile(string message)
+        {
+            Logger.Log(message);
         }
     }
 }

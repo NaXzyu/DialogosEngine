@@ -6,6 +6,7 @@ namespace DialogosEngine
     public static class AgentUtils
     {
         public const string k_EndOfSequence = "<eos>";
+        public const string k_AgentLogFile = "EchoAgentLog.txt";
 
         public static float CalculateEchoReward(string expectedString, string guessedString)
         {

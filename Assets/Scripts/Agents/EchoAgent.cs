@@ -29,6 +29,9 @@ namespace DialogosEngine
 
                 SetReward(reward);
                 _CachedString = null;
+
+                // Testing
+                Terminal.Instance.LogToFile($"{GetCumulativeReward()} | {_CachedString} | {expectedString}");
             }
         }
 
