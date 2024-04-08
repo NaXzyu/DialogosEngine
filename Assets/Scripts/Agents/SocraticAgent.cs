@@ -58,23 +58,19 @@ namespace DialogosEngine
             {
                 if (_vector == null || _vectorIndex >= _vector.Length)
                 {
-                    size += text[_textIndex].Length;
-                    _vector = Lexer.Vectorize(text[_textIndex]);
+                    _vector = Lexer.VectorizeUTF8(text[_textIndex]);
+                    size += _vector.Length;
                     _vectorIndex = 0;
                     _textIndex++;
                 }
 
-                if (_vectorIndex < _vector.Length)
+                // truncate for max vectors
+                while (_vectorIndex < _vector.Length && _totalAdded < maxObservations)
                 {
                     sensor.AddObservation(_vector[_vectorIndex]);
                     _vectorIndex++;
                     _totalAdded++;
                 }
-            }
-
-            if (_totalAdded >= maxObservations)
-            {
-                Debug.LogWarning("Maximum number of text sensors exceeded.");
             }
         }
 

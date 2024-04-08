@@ -1,67 +1,168 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
+using UnityEditor;
 using UnityEngine;
 
 namespace DialogosEngine
 {
     public static class Lexer
     {
+        public const int k_MaxChars = 1000;
+        public const int k_CharsPerFloat = 2;
         private static bool _isLittleEndian;
         public static bool IsLittleEndian => _isLittleEndian;
 
+        public static float[] PowersOfTen = Enumerable.Range(0, k_CharsPerFloat).Select(x => (float)Math.Pow(10, 3 * x)).ToArray();
+        public const float MultiplierASCII = 0.000001f;
+        public const float MultiplierUTF8 = 1.0f / (1 << 23);
+
         public static float[] Vectorize(string line)
         {
-            try
+            if (line == null)
             {
-                byte[] _bytes = System.Text.Encoding.ASCII.GetBytes(line);
-                int _size = (int)Math.Ceiling(_bytes.Length / 4.0);
-                float[] _vector = new float[_size];
-                int _float = 0;
-                int _byte = 0;
+                throw new ArgumentNullException(nameof(line), "Input string cannot be null.");
+            }
+            if (line.Length > k_MaxChars)
+            {
+                var message = new StringBuilder(50)
+                    .Append("Input exceeds the maximum length of ")
+                    .Append(k_MaxChars)
+                    .Append(" characters.")
+                    .ToString();
+                throw new LexerException(message);
+            }
 
-                while (Process(ref _byte, ref _float, _bytes, _vector)) ;
-                return _vector;
-            }
-            catch (Exception ex)
+            int vectorSize = (int)Math.Ceiling((float)line.Length / k_CharsPerFloat);
+            float[] vector = new float[vectorSize];
+
+            for (int i = 0, j = 0; i < line.Length; i += k_CharsPerFloat, j++)
             {
-                throw new LexerException("An error occurred while processing", ex);
+                float packedValue = 0;
+                int charsToProcess = Math.Min(k_CharsPerFloat, line.Length - i);
+
+                for (int k = 0; k < charsToProcess; k++)
+                {
+                    // Inline ASCII conversion
+                    packedValue += (line[i + k] * PowersOfTen[charsToProcess - k - 1]);
+                }
+
+                vector[j] = packedValue * MultiplierASCII;
             }
+
+            return vector;
         }
 
-        public static bool Process(ref int byteIndex, ref int floatIndex, byte[] bytes, float[] vector)
+        public static float[] VectorizeUTF8(string line)
         {
-            if (byteIndex >= bytes.Length) return false;
-
-            return ProcessBytesToFloats(ref byteIndex, ref floatIndex, bytes, vector);
-        }
-
-        private static bool ProcessBytesToFloats(ref int byteIndex, ref int floatIndex, byte[] bytes, float[] vector)
-        {
-            while (byteIndex < bytes.Length && floatIndex < vector.Length)
+            if (line == null)
             {
-                vector[floatIndex++] = ConvertBytesToSingle(ref byteIndex, bytes);
+                throw new ArgumentNullException(nameof(line), "Input string cannot be null.");
             }
-            return byteIndex < bytes.Length;
-        }
-
-        private static byte[] GetNextBytes(ref int byteIndex, byte[] bytes)
-        {
-            byte[] _bytes = new byte[4];
-            int _bytesToCopy = Math.Min(4, bytes.Length - byteIndex);
-            Array.Copy(bytes, byteIndex, _bytes, 0, _bytesToCopy);
-            byteIndex += _bytesToCopy;
-            return _bytes;
-        }
-
-        private static float ConvertBytesToSingle(ref int byteIndex, byte[] bytes)
-        {
-            byte[] _bytes = GetNextBytes(ref byteIndex, bytes);
-            if (!IsLittleEndian)
+            if (line.Length > k_MaxChars)
             {
-                Array.Reverse(_bytes);
+                var message = new StringBuilder(50)
+                    .Append("Input exceeds the maximum length of ")
+                    .Append(k_MaxChars)
+                    .Append(" characters.")
+                    .ToString();
+                throw new LexerException(message);
             }
-            return BitConverter.ToSingle(_bytes, 0);
+
+            byte[] utf8Bytes = Encoding.UTF8.GetBytes(line);
+            float[] vector = new float[utf8Bytes.Length];
+
+            for (int i = 0; i < utf8Bytes.Length; i++)
+            {
+                vector[i] = utf8Bytes[i] * MultiplierUTF8;
+            }
+
+            return vector;
+        }
+
+        public static string QuantizeUTF8(float[] vector)
+        {
+            if (vector == null)
+            {
+                throw new ArgumentNullException(nameof(vector), "Input vector cannot be null.");
+            }
+
+            byte[] utf8Bytes = new byte[vector.Length];
+            int index = 0;
+            while (index < vector.Length)
+            {
+                utf8Bytes[index] = (byte)(vector[index] / MultiplierUTF8);
+                index++;
+            }
+
+            Decoder utf8Decoder = Encoding.UTF8.GetDecoder();
+            int charCount = utf8Decoder.GetCharCount(utf8Bytes, 0, utf8Bytes.Length);
+            if (charCount > k_MaxChars)
+            {
+                throw new LexerException($"Output exceeds the maximum length of {k_MaxChars} characters.");
+            }
+
+            char[] chars = new char[charCount];
+            utf8Decoder.GetChars(utf8Bytes, 0, utf8Bytes.Length, chars, 0);
+
+            return new string(chars);
+        }
+
+        public static int LevenshteinDistance(string a, string b)
+        {
+            if (string.IsNullOrEmpty(a))
+            {
+                return string.IsNullOrEmpty(b) ? 0 : new StringInfo(b).LengthInTextElements;
+            }
+
+            if (string.IsNullOrEmpty(b))
+            {
+                return new StringInfo(a).LengthInTextElements;
+            }
+
+            TextElementEnumerator enumeratorA = StringInfo.GetTextElementEnumerator(a);
+            TextElementEnumerator enumeratorB = StringInfo.GetTextElementEnumerator(b);
+
+            List<string> textElementsA = new List<string>();
+            while (enumeratorA.MoveNext())
+            {
+                textElementsA.Add((string)enumeratorA.Current);
+            }
+
+            List<string> textElementsB = new List<string>();
+            while (enumeratorB.MoveNext())
+            {
+                textElementsB.Add((string)enumeratorB.Current);
+            }
+
+            int lengthA = textElementsA.Count;
+            int lengthB = textElementsB.Count;
+            int[] previousRow = new int[lengthB + 1];
+            int[] currentRow = new int[lengthB + 1];
+
+            for (int j = 0; j <= lengthB; j++)
+            {
+                previousRow[j] = j;
+            }
+
+            for (int i = 1; i <= lengthA; i++)
+            {
+                currentRow[0] = i;
+
+                for (int j = 1; j <= lengthB; j++)
+                {
+                    int cost = textElementsB[j - 1] == textElementsA[i - 1] ? 0 : 1;
+                    currentRow[j] = Math.Min(
+                        Math.Min(currentRow[j - 1] + 1, previousRow[j] + 1),
+                        previousRow[j - 1] + cost);
+                }
+
+                (currentRow, previousRow) = (previousRow, currentRow);
+            }
+
+            return previousRow[lengthB];
         }
 
         public static float CalculateWhitespace(string[] text)
