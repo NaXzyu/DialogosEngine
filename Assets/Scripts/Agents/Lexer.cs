@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using UnityEditor;
@@ -113,38 +114,56 @@ namespace DialogosEngine
         {
             if (string.IsNullOrEmpty(a))
             {
-                return string.IsNullOrEmpty(b) ? 0 : b.Length;
+                return string.IsNullOrEmpty(b) ? 0 : new StringInfo(b).LengthInTextElements;
             }
 
             if (string.IsNullOrEmpty(b))
             {
-                return a.Length;
+                return new StringInfo(a).LengthInTextElements;
             }
 
-            int[] codePointsA = a.ToCharArray().Select(c => char.ConvertToUtf32(a, a.IndexOf(c))).ToArray();
-            int[] codePointsB = b.ToCharArray().Select(c => char.ConvertToUtf32(b, b.IndexOf(c))).ToArray();
+            TextElementEnumerator enumeratorA = StringInfo.GetTextElementEnumerator(a);
+            TextElementEnumerator enumeratorB = StringInfo.GetTextElementEnumerator(b);
 
-            int lengthA = codePointsA.Length;
-            int lengthB = codePointsB.Length;
-            var distances = new int[lengthA + 1, lengthB + 1];
+            List<string> textElementsA = new List<string>();
+            while (enumeratorA.MoveNext())
+            {
+                textElementsA.Add((string)enumeratorA.Current);
+            }
 
-            for (int i = 0; i <= lengthA; distances[i, 0] = i++) { }
-            for (int j = 0; j <= lengthB; distances[0, j] = j++) { }
+            List<string> textElementsB = new List<string>();
+            while (enumeratorB.MoveNext())
+            {
+                textElementsB.Add((string)enumeratorB.Current);
+            }
+
+            int lengthA = textElementsA.Count;
+            int lengthB = textElementsB.Count;
+            int[] previousRow = new int[lengthB + 1];
+            int[] currentRow = new int[lengthB + 1];
+
+            for (int j = 0; j <= lengthB; j++)
+            {
+                previousRow[j] = j;
+            }
 
             for (int i = 1; i <= lengthA; i++)
             {
+                currentRow[0] = i;
+
                 for (int j = 1; j <= lengthB; j++)
                 {
-                    int cost = codePointsB[j - 1] == codePointsA[i - 1] ? 0 : 1;
-                    distances[i, j] = Mathf.Min(
-                        Mathf.Min(distances[i - 1, j] + 1, distances[i, j - 1] + 1),
-                        distances[i - 1, j - 1] + cost);
+                    int cost = textElementsB[j - 1] == textElementsA[i - 1] ? 0 : 1;
+                    currentRow[j] = Math.Min(
+                        Math.Min(currentRow[j - 1] + 1, previousRow[j] + 1),
+                        previousRow[j - 1] + cost);
                 }
+
+                (currentRow, previousRow) = (previousRow, currentRow);
             }
 
-            return distances[lengthA, lengthB];
+            return previousRow[lengthB];
         }
-
 
         public static float CalculateWhitespace(string[] text)
         {

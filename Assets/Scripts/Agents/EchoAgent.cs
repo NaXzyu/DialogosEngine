@@ -24,7 +24,6 @@ namespace DialogosEngine
                 if (_CachedString.EndsWith(AgentUtils.k_EndOfSequence))
                 {
                     _CachedString = _CachedString.Replace(AgentUtils.k_EndOfSequence, "");
-                    
                     Terminal.Instance.Shell.Run(_CachedString);
                 }
 
