@@ -25,7 +25,6 @@ namespace DialogosEngine
             _PSM.AddState("Decide", new DecideState(), 1.0f, 0.1f);
             _PSM.AddState("Act", new ActState(), 1.0f, 0.1f);
             _PSM.AddState("Learn", new LearnState(), 1.0f, 0.1f);
-            Lexer.Reset();
         }
 
         public override void OnEpisodeBegin()

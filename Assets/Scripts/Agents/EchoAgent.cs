@@ -48,7 +48,6 @@ namespace DialogosEngine
             float _lengthControlValue = _actionArray[0];
 
             int outputLength = Transformer.RoundMax(ref _lengthControlValue);
-
             AgentUtils.ProcessActionArray(ref _actionArray, outputLength);
 
             _CachedString = Lexer.QuantizeUTF8(_actionArray);

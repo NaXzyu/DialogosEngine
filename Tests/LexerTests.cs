@@ -4,95 +4,6 @@
     public static class LexerTests
     {
         [Test]
-        public static void Vectorize_GivenString_ConvertsToAsciiFloatArray()
-        {
-            // Arrange
-            string input = "Test";
-            TestContext.WriteLine($"Testing with input string: '{input}'.");
-
-            // Expected packed values need to be calculated based on the packing logic used in VectorizeNew
-            // For the sake of this example, let's assume the packing logic results in these values
-            // ASCII values for 'T', 'e', 's', 't' { 84, 101, 115, 116 }
-            var expected = new float[] { 0.084101f, 0.115116f };
-
-            // Act
-            float[] result = Lexer.Vectorize(input);
-            TestContext.WriteLine($"Resulting float array: {Utility.FormatFloatArray(result)}");
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.That(result.Length, Is.EqualTo(expected.Length), "The length of the result array should match the expected array.");
-            for (int i = 0; i < expected.Length; i++)
-            {
-                Assert.That(result[i], Is.EqualTo(expected[i]), $"The packed value at index {i} should match the expected value.");
-            }
-            TestContext.WriteLine($"Test passed: Input string '{input}' converts to expected packed float array.");
-        }
-
-        [Test]
-        public static void Vectorize_GivenEmptyString_ReturnsEmptyFloatArray()
-        {
-            // Arrange
-            var input = string.Empty;
-            var expected = new float[] { };
-
-            // Act
-            var result = Lexer.Vectorize(input);
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.That(result.Length, Is.EqualTo(expected.Length), "The result array should be empty for an empty input string.");
-        }
-
-        [Test]
-        public static void Vectorize_GivenNull_ThrowsArgumentNullException()
-        {
-            // Arrange
-            string input = null;
-
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentNullException>(() => Lexer.Vectorize(input));
-            Assert.That(ex.ParamName, Is.EqualTo("line"), "The exception should be thrown for a null input string.");
-        }
-
-        [Test]
-        public static void Vectorize_GivenStringExceedingMaxChars_ThrowsLexerException()
-        {
-            // Arrange
-            var input = new string('a', Lexer.k_MaxChars + 1);
-
-            // Act & Assert
-            var ex = Assert.Throws<LexerException>(() => Lexer.Vectorize(input));
-            Assert.That(ex.Message, Is.EqualTo($"Input exceeds the maximum length of {Lexer.k_MaxChars} characters."), "The exception should be thrown for input exceeding the maximum character limit.");
-        }
-
-        [Test]
-        public static void Vectorize_GivenStringWithSpecialChars_ConvertsToAsciiFloatArray()
-        {
-            // Arrange
-            string input = "T@st!";
-            TestContext.WriteLine($"Testing with input string: '{input}'.");
-
-            // Calculate expected values based on the packing logic used in Vectorize
-            // ASCII values for 'T', '@', 's', 't', '!' are 84, 64, 115, 116, 33
-            // Assuming charsPerFloat is 2, and considering the multiplier and precision
-            var expected = new float[] { 0.084064f, 0.115116f, 0.000033f };
-
-            // Act
-            float[] result = Lexer.Vectorize(input);
-            TestContext.WriteLine($"Resulting float array: {Utility.FormatFloatArray(result)}");
-
-            // Assert
-            Assert.IsNotNull(result, "The result should not be null.");
-            Assert.That(result.Length, Is.EqualTo(expected.Length), "The length of the result array should match the expected array.");
-            for (int i = 0; i < expected.Length; i++)
-            {
-                Assert.That(result[i], Is.EqualTo(expected[i]), $"The packed value at index {i} should match the expected value.");
-            }
-            TestContext.WriteLine($"Test passed: Input string '{input}' converts to expected packed float array.");
-        }
-
-        [Test]
         public static void VectorizeUTF8_GivenString_ConvertsToUtf8FloatArray()
         {
             // Arrange
@@ -573,6 +484,126 @@
             Assert.That(result, Is.EqualTo(expectedDistance), $"The Levenshtein distance between '{stringA}' and '{stringB}' should be {expectedDistance}.");
 
             TestContext.WriteLine($"Test passed: The Levenshtein distance between '{stringA}' and '{stringB}' is correctly calculated as {expectedDistance}.");
+        }
+
+        [Test]
+        public static void VectorizeUTF8_ExceedsMaxBufferLength_ThrowsLexerException()
+        {
+            // Arrange
+            string input = new string('a', Lexer.k_MaxBufferLength + 1); // Input string that exceeds max buffer length
+            TestContext.WriteLine($"Testing VectorizeUTF8 with input exceeding max buffer length: '{input.Length}' characters.");
+
+            // Act & Assert
+            var ex = Assert.Throws<LexerException>(() => Lexer.VectorizeUTF8(input));
+            TestContext.WriteLine($"Expected LexerException was thrown: {ex.Message}");
+        }
+
+        [Test]
+        public static void VectorizeUTF8_WithinMaxBufferLength_DoesNotThrowException()
+        {
+            // Arrange
+            string input = new string('a', Lexer.k_MaxBufferLength); // Input string within max buffer length
+            TestContext.WriteLine($"Testing VectorizeUTF8 with input within max buffer length: '{input.Length}' characters.");
+
+            // Act
+            float[] result = Lexer.VectorizeUTF8(input);
+            TestContext.WriteLine($"Vectorized buffer length: {result.Length}");
+
+            // Assert
+            Assert.That(result.Length, Is.EqualTo(Lexer.k_MaxBufferLength), "The vectorized buffer length should match the max buffer length.");
+            TestContext.WriteLine("Test passed: The vectorized buffer length matches the max buffer length.");
+        }
+
+        [Test]
+        public static void QuantizeUTF8_ExceedsMaxBufferLength_ThrowsLexerException()
+        {
+            // Arrange
+            float[] vector = Enumerable.Repeat(1f, Lexer.k_MaxBufferLength + 1).ToArray(); // Vector that exceeds max buffer length
+            TestContext.WriteLine($"Testing QuantizeUTF8 with vector exceeding max buffer length: '{vector.Length}' floats.");
+
+            // Act & Assert
+            var ex = Assert.Throws<LexerException>(() => Lexer.QuantizeUTF8(vector));
+            TestContext.WriteLine($"Expected LexerException was thrown: {ex.Message}");
+        }
+
+        [Test]
+        public static void QuantizeUTF8_WithinMaxBufferLength_DoesNotThrowException()
+        {
+            // Arrange
+            float[] vector = Enumerable.Repeat(1f, Lexer.k_MaxBufferLength).ToArray(); // Vector within max buffer length
+            TestContext.WriteLine($"Testing QuantizeUTF8 with vector within max buffer length: '{vector.Length}' floats.");
+
+            // Act
+            string result = Lexer.QuantizeUTF8(vector);
+            TestContext.WriteLine($"Quantized string length: {result.Length}");
+
+            // Assert
+            Assert.That(result.Length, Is.LessThanOrEqualTo(Lexer.k_MaxBufferLength), "The quantized string length should be less than or equal to the max buffer length.");
+            TestContext.WriteLine("Test passed: The quantized string length is within the max buffer length.");
+        }
+
+        [Test]
+        public static void VectorizeUTF8_AtMaxBufferLengthBoundary_DoesNotThrowException()
+        {
+            // Arrange
+            string input = new string('a', Lexer.k_MaxBufferLength); // Input string at max buffer length boundary
+            TestContext.WriteLine($"Testing VectorizeUTF8 with input at max buffer length boundary: '{input.Length}' characters.");
+
+            // Act
+            float[] result = Lexer.VectorizeUTF8(input);
+            TestContext.WriteLine($"Vectorized buffer length: {result.Length}");
+
+            // Assert
+            Assert.That(result.Length, Is.EqualTo(Lexer.k_MaxBufferLength), "The vectorized buffer length should match the max buffer length.");
+            TestContext.WriteLine("Test passed: The vectorized buffer length matches the max buffer length.");
+        }
+
+        [Test]
+        public static void VectorizeUTF8_JustBelowMaxBufferLengthBoundary_DoesNotThrowException()
+        {
+            // Arrange
+            string input = new string('a', Lexer.k_MaxBufferLength - 1); // Input string just below max buffer length boundary
+            TestContext.WriteLine($"Testing VectorizeUTF8 with input just below max buffer length boundary: '{input.Length}' characters.");
+
+            // Act
+            float[] result = Lexer.VectorizeUTF8(input);
+            TestContext.WriteLine($"Vectorized buffer length: {result.Length}");
+
+            // Assert
+            Assert.That(result.Length, Is.EqualTo(Lexer.k_MaxBufferLength - 1), "The vectorized buffer length should be just below the max buffer length.");
+            TestContext.WriteLine("Test passed: The vectorized buffer length is just below the max buffer length.");
+        }
+
+        [Test]
+        public static void QuantizeUTF8_AtMaxBufferLengthBoundary_DoesNotThrowException()
+        {
+            // Arrange
+            float[] vector = Enumerable.Repeat(1f, Lexer.k_MaxBufferLength).ToArray(); // Vector at max buffer length boundary
+            TestContext.WriteLine($"Testing QuantizeUTF8 with vector at max buffer length boundary: '{vector.Length}' floats.");
+
+            // Act
+            string result = Lexer.QuantizeUTF8(vector);
+            TestContext.WriteLine($"Quantized string length: {result.Length}");
+
+            // Assert
+            Assert.That(result.Length, Is.LessThanOrEqualTo(Lexer.k_MaxBufferLength), "The quantized string length should be less than or equal to the max buffer length.");
+            TestContext.WriteLine("Test passed: The quantized string length is within the max buffer length.");
+        }
+
+        [Test]
+        public static void QuantizeUTF8_JustBelowMaxBufferLengthBoundary_DoesNotThrowException()
+        {
+            // Arrange
+            float[] vector = Enumerable.Repeat(1f, Lexer.k_MaxBufferLength - 1).ToArray(); // Vector just below max buffer length boundary
+            TestContext.WriteLine($"Testing QuantizeUTF8 with vector just below max buffer length boundary: '{vector.Length}' floats.");
+
+            // Act
+            string result = Lexer.QuantizeUTF8(vector);
+            TestContext.WriteLine($"Quantized string length: {result.Length}");
+
+            // Assert
+            Assert.That(result.Length, Is.LessThanOrEqualTo(Lexer.k_MaxBufferLength - 1), "The quantized string length should be less than or equal to one less than the max buffer length.");
+            TestContext.WriteLine("Test passed: The quantized string length is just below the max buffer length.");
         }
 
     }

@@ -50,7 +50,6 @@ namespace DialogosEngine
                 actionArray[i - 1] = actionArray[i];
             }
 
-            // Resize the array to the desired output length
             Array.Resize(ref actionArray, outputLength);
         }
     }
