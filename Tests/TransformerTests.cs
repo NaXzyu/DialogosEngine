@@ -33,7 +33,7 @@
             TestContext.WriteLine($"Rounded max result: {result}");
 
             // Assert
-            Assert.That(result, Is.InRange(0, Lexer.k_MaxChars), "The result should be within the range [0, Lexer.k_MaxChars].");
+            Assert.That(result, Is.InRange(0, Lexer.k_MaxBufferLength), "The result should be within the range [0, Lexer.k_MaxChars].");
             TestContext.WriteLine($"Test passed: The rounded max result is within the expected range.");
         }
 
@@ -94,7 +94,7 @@
 
             // Assert
             Assert.That(zeroResult, Is.EqualTo(0), "The rounded result for zero value should be 0.");
-            Assert.That(maxResult, Is.EqualTo(Lexer.k_MaxChars), "The rounded result for max value should be Lexer.k_MaxChars.");
+            Assert.That(maxResult, Is.EqualTo(Lexer.k_MaxBufferLength), "The rounded result for max value should be Lexer.k_MaxChars.");
             TestContext.WriteLine($"Test passed: The rounded max results for zero and max values are within the expected range.");
         }
 

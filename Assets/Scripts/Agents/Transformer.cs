@@ -14,7 +14,7 @@ namespace DialogosEngine
 
         public static int RoundMax(ref float value)
         {
-            return Mathf.RoundToInt(Transform(ref value) * Lexer.k_MaxChars);
+            return Mathf.RoundToInt(Transform(ref value) * Lexer.k_MaxBufferLength);
         }
 
         public static float[] SoftMax(ref float[] values)

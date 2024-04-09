@@ -10,7 +10,6 @@ namespace DialogosEngine
 {
     public static class Lexer
     {
-        public const int k_MaxChars = 1000;
         public const int k_MaxBufferLength = 1000;
         public const float k_ByteMultiplier = 1.0f / (1 << 23);
 
