@@ -1,5 +1,5 @@
 behaviors:
-  Kyle:
+  Dialogos:
     trainer_type: sac
     hyperparameters:
       learning_rate: 0.0003
@@ -28,8 +28,8 @@ behaviors:
         network_settings:
           hidden_units: 256
           learning_rate: 0.0001
-    keep_checkpoints: 40
-    checkpoint_interval: 500000
-    max_steps: 20000000
+    keep_checkpoints: 100
+    checkpoint_interval: 10000
+    max_steps: 1000000
     time_horizon: 1000
     summary_freq: 10000
