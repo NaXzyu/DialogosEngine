@@ -4,6 +4,23 @@
     public class AgentUtilsTests
     {
         [Test]
+        public void CalculateEchoReward_ShouldReturnPerfectScore_ForEchoHelloEos()
+        {
+            // Arrange
+            string expected = "echo hello <eos>";
+            string guessed = "echo hello <eos>";
+            TestContext.WriteLine($"Testing CalculateEchoReward with expected string: '{expected}' and guessed string: '{guessed}'.");
+
+            // Act
+            float reward = AgentUtils.CalculateEchoReward(expected, guessed);
+            TestContext.WriteLine($"Calculated reward: {reward}");
+
+            // Assert
+            Assert.That(reward, Is.EqualTo(1f), "The reward should be 1.0f when the expected and guessed strings match exactly for 'echo hello <eos>'.");
+            TestContext.WriteLine("Test passed: The calculated reward is 1.0f as expected for 'echo hello <eos>'.");
+        }
+
+        [Test]
         public void CalculateEchoReward_ShouldReturnPerfectScore_WhenStringsMatchExactly()
         {
             // Arrange

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace CommandTerminal
 {
@@ -16,13 +17,18 @@ namespace CommandTerminal
         {
             string _desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             _logFilePath = Path.Combine(_desktopPath, fileName);
-            _streamWriter = new StreamWriter(_logFilePath, true);
+            _streamWriter = new StreamWriter(new FileStream(_logFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite), Encoding.UTF8);
             _logBuffer = new List<string>();
             _bufferSize = bufferSize;
         }
 
         public void Log(string message)
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("CommandLogger", "Cannot log to a disposed CommandLogger.");
+            }
+                
             lock (_logBuffer)
             {
                 long _epochTime = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
@@ -50,7 +56,6 @@ namespace CommandTerminal
                 }
                 catch (Exception ex)
                 {
-                    // Handle the exception, e.g., log it to a separate file or rethrow
                     Console.WriteLine($"An error occurred while flushing the buffer: {ex.Message}");
                 }
             }
@@ -66,6 +71,8 @@ namespace CommandTerminal
         {
             if (!_disposed)
             {
+                FlushBuffer(); // Ensure buffer is flushed before closing
+                _streamWriter?.Close(); // Close the stream before disposing
                 _streamWriter?.Dispose();
                 _disposed = true;
             }

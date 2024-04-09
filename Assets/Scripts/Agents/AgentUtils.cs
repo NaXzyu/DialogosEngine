@@ -19,6 +19,10 @@ namespace DialogosEngine
             {
                 throw new ArgumentException("Expected string must end with '<eos>'.");
             }
+            if (expectedString == guessedString)
+            {
+                return 1f;
+            }
 
             // Calculate Levenshtein distance
             int levenshteinDistance = Lexer.LevenshteinDistance(expectedString, guessedString);

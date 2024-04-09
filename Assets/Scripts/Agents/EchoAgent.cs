@@ -2,12 +2,14 @@ using CommandTerminal;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
+using UnityEngine;
 
 namespace DialogosEngine
 {
     public class EchoAgent : Agent
     {
         string _CachedString;
+        string _ExpectedString = "echo hello <eos>";
 
         public override void OnEpisodeBegin()
         {
@@ -16,10 +18,12 @@ namespace DialogosEngine
 
         public void FixedUpdate()
         {
-            string expectedString = GetExpectedString();
             if (_CachedString != null)
             {
-                float reward = AgentUtils.CalculateEchoReward(expectedString, _CachedString);
+                float reward = AgentUtils.CalculateEchoReward(_ExpectedString, _CachedString);
+
+                // Debug
+                Terminal.Instance.LogToFile($"[{StepCount}]{reward} | {_CachedString} | {_ExpectedString}");
 
                 if (_CachedString.EndsWith(AgentUtils.k_EndOfSequence))
                 {
@@ -27,11 +31,17 @@ namespace DialogosEngine
                     Terminal.Instance.Shell.Run(_CachedString);
                 }
 
-                SetReward(reward);
-                _CachedString = null;
-
-                // Testing
-                Terminal.Instance.LogToFile($"{GetCumulativeReward()} | {_CachedString} | {expectedString}");
+                if (_CachedString == _ExpectedString)
+                {
+                    _CachedString = null;
+                    SetReward(1f);
+                    EndEpisode();
+                }
+                else
+                {
+                    _CachedString = null;
+                    SetReward(reward);
+                }
             }
         }
 
@@ -39,9 +49,11 @@ namespace DialogosEngine
         {
             string _buffer = Terminal.Instance.Buffer.GetLastLog();
             float[] _vectorizedBuffer = Lexer.VectorizeUTF8(_buffer);
-            foreach (var obs in _vectorizedBuffer)
+            int maxObservations = Mathf.Min(_vectorizedBuffer.Length, Lexer.k_MaxBufferLength);
+
+            for (int i = 0; i < maxObservations; i++)
             {
-                sensor.AddObservation(obs);
+                sensor.AddObservation(_vectorizedBuffer[i]);
             }
         }
 
@@ -54,11 +66,6 @@ namespace DialogosEngine
             AgentUtils.ProcessActionArray(ref _actionArray, outputLength);
 
             _CachedString = Lexer.QuantizeUTF8(_actionArray);
-        }
-
-        private string GetExpectedString()
-        {
-            return "echo hello <eos>"; // Testing
         }
     }
 }
