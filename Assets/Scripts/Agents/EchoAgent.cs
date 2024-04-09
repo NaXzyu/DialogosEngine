@@ -27,8 +27,8 @@ namespace DialogosEngine
 
                 if (_CachedString.EndsWith(AgentUtils.k_EndOfSequence))
                 {
-                    _CachedString = _CachedString.Replace(AgentUtils.k_EndOfSequence, "");
-                    Terminal.Instance.Shell.Run(_CachedString);
+                    string _commandLine = _CachedString.Replace(AgentUtils.k_EndOfSequence, "");
+                    Terminal.Instance.Shell.Run(_commandLine);
                 }
 
                 if (_CachedString == _ExpectedString)
