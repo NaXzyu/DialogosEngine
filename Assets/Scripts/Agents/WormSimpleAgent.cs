@@ -1,41 +1,54 @@
+using CommandTerminal;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
 
-public class WormSimpleAgent : Agent
+namespace DialogosEngine
 {
-    public override void Initialize()
+    public class WormSimpleAgent : Agent
     {
-        //
-    }
+        CommandLogger Logger;
+        bool _IsInitialized = false;
 
-    public override void OnEpisodeBegin()
-    {
-        //
-    }
+        public override void Initialize()
+        {
+            Logger = new CommandLogger("WormSimpleAgent_log.txt", 1000);
+            Logger.Log($"[{StepCount}] Initialize");
+        }
 
-    public override void CollectObservations(VectorSensor sensor)
-    {
-        sensor.AddObservation(Random.value);
-    }
+        public override void OnEpisodeBegin()
+        {
+            Logger.Log($"[{StepCount}] OnEpisodeBegin");
+            _IsInitialized = true;
+        }
 
-    public void TouchedTarget()
-    {
-        AddReward(1f);
-    }
+        public override void CollectObservations(VectorSensor sensor)
+        {
+            var obs = Random.value;
+            sensor.AddObservation(obs);
+            Logger.Log($"[{StepCount}] CollectObservations: {obs}");
+        }
 
-    public override void OnActionReceived(ActionBuffers actionBuffers)
-    {
+        public override void OnActionReceived(ActionBuffers actionBuffers)
+        {
 
-        var i = -1;
-        var continuousActions = actionBuffers.ContinuousActions;
-        var output = continuousActions[++i];
-        Debug.Log(output);
-    }
+            var i = -1;
+            var continuousActions = actionBuffers.ContinuousActions;
+            var output = continuousActions[++i];
+            Logger.Log($"[{StepCount}] OnActionReceived: {output}");
+        }
 
-    void FixedUpdate()
-    {
-        AddReward(Random.value);
+        void FixedUpdate()
+        {
+            if(!_IsInitialized)
+            {
+                return;
+            }
+
+            var reward = Random.value;
+            AddReward(reward);
+            Logger.Log($"[{StepCount}] FixedUpdate.reward: {reward}");
+        }
     }
 }
