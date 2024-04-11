@@ -1173,7 +1173,6 @@ GameObject:
   - component: {fileID: 4363568567019248220}
   - component: {fileID: 4363568567019248213}
   - component: {fileID: 4363568567019248212}
-  - component: {fileID: 4363568567019248215}
   m_Layer: 0
   m_Name: WormBasePrefab
   m_TagString: Untagged
@@ -1229,19 +1228,6 @@ MonoBehaviour:
   jointDampen: 30
   maxJointForceLimit: 10000
   bodyPartsList: []
---- !u!114 &4363568567019248215
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4363568567019248208}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a6da8f78a394c6ab027688eab81e04d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  debugCommandLineOverride: 
 --- !u!114 &4363568567019248219
 MonoBehaviour:
   m_ObjectHideFlags: 0
