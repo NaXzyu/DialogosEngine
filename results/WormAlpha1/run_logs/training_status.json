@@ -1,0 +1,29 @@
+{
+    "Worm": {
+        "checkpoints": [
+            {
+                "steps": 1000,
+                "file_path": "results\\WormAlpha1\\Worm\\Worm-1000.onnx",
+                "reward": null,
+                "creation_time": 1712854348.647669,
+                "auxillary_file_paths": [
+                    "results\\WormAlpha1\\Worm\\Worm-1000.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 1000,
+            "file_path": "results\\WormAlpha1\\Worm.onnx",
+            "reward": null,
+            "creation_time": 1712854348.647669,
+            "auxillary_file_paths": [
+                "results\\WormAlpha1\\Worm\\Worm-1000.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0.dev0",
+        "torch_version": "2.2.1+cpu"
+    }
+}
